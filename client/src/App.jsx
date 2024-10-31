@@ -3,6 +3,7 @@ import './App.css'
 import axios from "axios";
 import InitialFetch from './components/InitialFetch';
 import ULMLogin from './components/ULMLogin';
+import Home from './components/Home';
 
 function App() {
 
@@ -10,8 +11,8 @@ function App() {
 
   return (
     <>
-      {/* <InitialFetch /> */}
-      <ULMLogin />
+      <Home />
+      {/* <ULMLogin /> */}
      
      
     </>
