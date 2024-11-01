@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import nsaLogo from '../assets/nsaLogo.png';
 import backgroundImage from '../assets/nsagroup.jpg';
 
-const ULMLogin = () => {
+const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -122,4 +122,4 @@ const ULMLogin = () => {
     );
 };
 
-export default ULMLogin;
+export default Login;

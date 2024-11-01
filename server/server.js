@@ -45,16 +45,34 @@ app.get('/dblist',(req, res)=>{
                 console.log(err);
 
             }
-            res.json(results);
+            return res.json(results);
             
         })
 
 
 })
 
+app.post('/dblist', (req, res)=>{
+    const q= "INSERT INTO users (`username`, `email`, `first_name`, `last_name`, `password`) VALUES (?,?,?,?,?)";
+    const values= [req.body.username, 
+        req.body.email,
+        req.body.first_name,
+        req.body.last_name,
+        req.body.password
+    ];
+    
+    db.query(q, values, (err, results)=>{
+        if(err)console.log(err);
+        return res.json(results);
+
+    })
+
+})
+
 //setting routes
 app.get("/", (req, res) => {
-    res.redirect("http://localhost:5173/");
+    //res.redirect("http://localhost:5173/");
+    res.send("hello");
     console.log("redirected successful");
 });
 
