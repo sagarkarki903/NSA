@@ -5,7 +5,7 @@ export default {
   theme: {
     extend: {colors: {
       maroon: {
-        700: '#800000', // Customize with the exact shade of maroon you need
+        700: '#862633', // Customize with the exact shade of maroon you need
       },
     },},
   },

@@ -9,6 +9,7 @@ import Contact from './components/Contact';
 import Login from './components/Login';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import SignUp from './components/SignUp';
 
 const App = () => {
   return (
@@ -16,11 +17,12 @@ const App = () => {
       <Navbar />
       <Routes>
       
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Login />} />
         <Route path="/about" element={<About />} />
         <Route path="/events" element={<Events />} />
         <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/signup" element = {<SignUp />} />
       
       </Routes>
       <Footer/>

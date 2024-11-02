@@ -46,6 +46,9 @@ const InitialFetch = () => {
                           </p>
                           <p className='text-gray-500'>Username: {user.username}</p>
                           <p className='text-gray-500'>Email: {user.email}</p>
+                          <p className='text-gray-500'>classification: {user.classification}</p>
+                          <p className='text-gray-500'>role: {user.role}</p>
+                        
                         </div>
                       </div>
                     </li>

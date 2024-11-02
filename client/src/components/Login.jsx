@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import nsaLogo from '../assets/nsaLogo.png';
 import backgroundImage from '../assets/nsagroup.jpg';
+import { Link } from 'react-router-dom'; // Ensure this import is here
+
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -115,6 +117,13 @@ const Login = () => {
                                 Forgot Password
                             </a>
                         </div>
+
+                        <div className="mt-4 text-center text-[#852633] hover:underline text-sm">
+                            
+                            <Link to= "/signup"> Dont have an account? Sign up!</Link>   
+                            
+                        </div>
+
                     </form>
                 </div>
             </div>
