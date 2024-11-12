@@ -1,62 +1,198 @@
-import React from 'react'
-import { useState, useEffect } from 'react'
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import nsaLogo from '../assets/nsaLogo.png';
 
-
-
-
 const InitialFetch = () => {
-  const [users, setUsers]= useState([]);
-    //connecting backend to frontend by fetching from backend server.js
-    const fetchAPI = async ()=> {
-        try{const response = await axios.get("http://localhost:8080/dblist");
-        setUsers(response.data);
+  const [users, setUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
+  const [formData, setFormData] = useState({
+    username: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    role: 'Member',  // default role
+    classification: '', 
+  });
+
+  // Fetch users from the backend
+  const fetchAPI = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/userlist");
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching data", error);
     }
-    catch(error){
-      console.error("error fetching data", error);
+  };
+
+  useEffect(() => {
+    fetchAPI();
+  }, []);
+
+  // Handle delete user
+  const handleDelete = async (userId) => {
+    try {
+      await axios.delete(`http://localhost:8080/users/${userId}`);
+      setUsers(users.filter(user => user.id !== userId));
+    } catch (error) {
+      console.error("Error deleting user", error);
     }
-      };
+  };
 
-    //calling the fetchAPI in every render
-    useEffect(() => {
-        fetchAPI();
-         }, []);
+ // Start editing a user
+const handleEditClick = (user) => {
+  setEditingUser(user.id);
+  setFormData({
+    username: user.username,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    email: user.email,
+    classification: user.classification || '', // Ensure classification is populated
+    role: user.role || 'Member',
+  });
+};
+  // Handle input change
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
-         return (
-          <div className='bg-gray-100 p-6 min-h-screen'>
-            <h1 className='text-2xl font-bold text-center mb-6 text-gray-700'>
-              User List
-            </h1>
-            <div className='bg-white shadow-md rounded-lg max-w-3xl mx-auto'>
-              {/* Card Header with Maroon Background */}
-              <div className='bg-maroon-700 p-4 rounded-t-lg flex justify-center'>
-              
-                <img src={nsaLogo} alt='ULM Logo' className='h-10 rounded-full' />
-              </div>
-              
-              <div className='p-4'>
-                <ul className='divide-y divide-gray-200'>
-                  {users.map((user, index) => (
-                    <li key={index} className='py-4'>
-                      <div className='flex items-center justify-between'>
-                        <div>
-                          <p className='text-lg font-semibold text-gray-800'>
-                            {user.first_name} {user.last_name}
-                          </p>
-                          <p className='text-gray-500'>Username: {user.username}</p>
-                          <p className='text-gray-500'>Email: {user.email}</p>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              
-            </div>
-          </div>
-        );
-}
+  // Handle save update
+  const handleSave = async (userId) => {
+    try {
+      await axios.put(`http://localhost:8080/users/${userId}`, formData);
+      setUsers(users.map(user => (user.id === userId ? { ...user, ...formData } : user)));
+      setEditingUser(null); // Exit edit mode
+    } catch (error) {
+      console.error("Error updating user", error);
+    }
+  };
 
-export default InitialFetch
+  return (
+    <div className='bg-gray-100 p-6 min-h-screen'>
+      <h1 className='text-2xl font-bold text-center mb-6 text-gray-700'>
+        User List
+      </h1>
+      <div className='bg-white shadow-md rounded-lg max-w-3xl mx-auto'>
+        <div className='bg-maroon-700 p-4 rounded-t-lg flex justify-center'>
+          <img src={nsaLogo} alt='ULM Logo' className='h-10 rounded-full' />
+        </div>
+        
+        <div className='p-4'>
+          <ul className='divide-y divide-gray-200'>
+            {users.map((user, index) => (
+              <li key={index} className='py-4 flex justify-between items-center'>
+                {editingUser === user.id ? (
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      name="first_name"
+                      value={formData.first_name}
+                      onChange={handleChange}
+                      className="w-full px-2 py-1 mb-2 border rounded"
+                      placeholder="First Name"
+                    />
+                    <input
+                      type="text"
+                      name="last_name"
+                      value={formData.last_name}
+                      onChange={handleChange}
+                      className="w-full px-2 py-1 mb-2 border rounded"
+                      placeholder="Last Name"
+                    />
+                    <input
+                      type="text"
+                      name="username"
+                      value={formData.username}
+                      onChange={handleChange}
+                      className="w-full px-2 py-1 mb-2 border rounded"
+                      placeholder="Username"
+                    />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full px-2 py-1 mb-2 border rounded"
+                      placeholder="Email"
+                    />
+                    
+
+                    {/* Role dropdown */}
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="w-full px-2 py-1 mb-2 border rounded"
+                    >
+                      <option value="Member">Member</option>
+                      <option value="Board Member">Board Member</option>
+                      <option value="President">President</option>
+                      <option value="Vice President">Vice President</option>
+                    </select>
+                    <select
+  name="classification"
+  value={formData.classification}
+  onChange={handleChange}
+  className="w-full px-2 py-1 mb-2 border rounded"
+>
+  <option value="" disabled>Select Classification</option> {/* Placeholder option */}
+  <option value="Freshman">Freshman</option>
+  <option value="Sophomore">Sophomore</option>
+  <option value="Junior">Junior</option>
+  <option value="Senior">Senior</option>
+  <option value="Other">Other</option>
+</select>
+
+                    <button
+                      onClick={() => handleSave(user.id)}
+                      className='bg-green-500 text-white py-1 px-3 mr-2 rounded hover:bg-green-600'
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={() => setEditingUser(null)}
+                      className='bg-gray-500 text-white py-1 px-3 rounded hover:bg-gray-600'
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex-1">
+                    <p className='text-lg font-semibold text-gray-800'>
+                      {user.first_name} {user.last_name}
+                    </p>
+                    <p className='text-gray-500'>Username: {user.username}</p>
+                    <p className='text-gray-500'>Email: {user.email}</p>
+                    <p className='text-gray-500'>Role: {user.role}</p>
+                    <p className='text-gray-500'> {user.classification}</p>
+                  </div>
+                )}
+                <div>
+                  {editingUser !== user.id && (
+                    <button
+                      onClick={() => handleEditClick(user)}
+                      className='bg-blue-500 text-white py-1 px-3 mr-2 rounded hover:bg-blue-600'
+                    >
+                      Update
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(user.id)}
+                    className='bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600'
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default InitialFetch;

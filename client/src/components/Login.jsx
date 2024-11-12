@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
 import nsaLogo from '../assets/nsaLogo.png';
 import backgroundImage from '../assets/nsagroup.jpg';
 
@@ -6,18 +8,30 @@ const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const navigate = useNavigate();
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Email:', email);
-        console.log('Password', password);
-        console.log('RememberMe:', rememberMe);
+        setError('');
+        try {
+            const response = await axios.post('http://localhost:8080/login', { email, password });
+            
+            if (response.status === 200) {
+                console.log('Login successful');
+                navigate('/'); // Redirect to home or another page after successful login
+            }
+        } catch (err) {
+            setError('Invalid email or password');
+            console.error('Login error:', err);
+        }
     };
 
     return (
         <div
             className="min-h-screen bg-slate-500 flex items-center justify-center bg-cover bg-center bg-fixed px-4"
-           style={{
+            style={{
                 backgroundImage: `url(${backgroundImage})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
@@ -32,7 +46,6 @@ const Login = () => {
 
                 <div className="p-4 md:p-5" style={{ backgroundColor: '#F7F9FA' }}>
                     <h2 className="text-lg md:text-xl font-semibold text-gray-700 mb-4 flex items-center justify-center">
-                        {/* SVG icon */}
                         <svg
                             className="w-5 h-5 mr-2"
                             fill="none"
@@ -50,12 +63,11 @@ const Login = () => {
                         Connecting to NSAEvents
                     </h2>
 
+                    {error && <p className="text-center text-red-500 mb-4">{error}</p>}
+
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium text-gray-700"
-                            >
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                                 Email
                             </label>
                             <input
@@ -70,10 +82,7 @@ const Login = () => {
                         </div>
 
                         <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700"
-                            >
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                 Password
                             </label>
                             <input
@@ -95,10 +104,7 @@ const Login = () => {
                                 onChange={(e) => setRememberMe(e.target.checked)}
                                 className="h-4 w-4 text-[#852633] focus:ring-[#852633] border-gray-300 rounded"
                             />
-                            <label
-                                htmlFor="remember-me"
-                                className="ml-2 block text-sm text-gray-700"
-                            >
+                            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                                 Remember me
                             </label>
                         </div>
@@ -111,9 +117,14 @@ const Login = () => {
                         </button>
 
                         <div className="mt-4 text-center">
-                            <a href="#" className="text-sm text-[#852633] hover:underline">
+                            <Link to="/forgot-password" className="text-sm text-[#852633] hover:underline">
                                 Forgot Password
-                            </a>
+                            </Link>
+                        </div>
+                        <div className="mt-4 text-center">
+                            <Link to="/signUp" className="text-sm text-[#852633] hover:underline">
+                                Sign Up here
+                            </Link>
                         </div>
                     </form>
                 </div>

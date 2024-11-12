@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Ensure this import is here
+import { Link } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -16,7 +16,14 @@ const Navbar = () => {
             <Link to="/about" className="hover:text-gray-300">About Us</Link>
             <Link to="/events" className="hover:text-gray-300">Events</Link>
             <Link to="/contact" className="hover:text-gray-300">Contact Us</Link>
-            <Link to="/login" className="hover:text-gray-300">Login</Link>
+            {user ? (
+              <>
+                <span className="hover:text-gray-300">Welcome, {user.username}</span>
+                <button onClick={onLogout} className="hover:text-gray-300">Logout</button>
+              </>
+            ) : (
+              <Link to="/login" className="hover:text-gray-300">Login</Link>
+            )}
           </div>
           <div className="md:hidden">
             <button
@@ -43,7 +50,19 @@ const Navbar = () => {
             <Link to="/about" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700">About Us</Link>
             <Link to="/events" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700">Events</Link>
             <Link to="/contact" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700">Contact Us</Link>
-            <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700">Login</Link>
+            {user ? (
+              <>
+                <span className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700">Welcome, {user.username}</span>
+                <button
+                  onClick={onLogout}
+                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700">Login</Link>
+            )}
           </div>
         </div>
       )}
