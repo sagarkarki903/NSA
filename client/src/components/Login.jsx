@@ -1,13 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import nsaLogo from '../assets/nsaLogo.png';
 import backgroundImage from '../assets/nsagroup.jpg';
 import { Link } from 'react-router-dom'; // Ensure this import is here
+
 
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
+
+
+
 
     const handleSubmit = (e) => {
         e.preventDefault();

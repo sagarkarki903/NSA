@@ -27,7 +27,8 @@ const SignUp = () => {
         try {
             const response = await axios.post('http://localhost:8080/dblistAdd', formData);
             console.log('Account Created Successfully: ', response.data);
-            navigate('/login');
+           // Navigate to /login with a success query parameter
+        //    navigate('/login?signup=success');
         }catch(error){
             // If the server returns a 400 error, display the error message
             if (error.response && error.response.status === 400) {
