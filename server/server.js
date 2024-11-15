@@ -168,6 +168,41 @@ app.get("/", (req, res) => {
     console.log("redirected successful");
 });
 
+
+
+app.get('/eventsummary',(req, res)=>{
+  const  q= "SELECT * FROM events_summary;";
+  db.query(q, (err, results)=>{
+      if(err){
+          console.log(err);
+
+      }
+      return res.json(results);
+      
+  })
+
+
+})
+
+
+
+app.get('/eventslist',(req, res)=>{
+  const  q= "SELECT * FROM events_list ORDER BY year DESC;";
+  db.query(q, (err, results)=>{
+      if(err){
+          console.log(err);
+
+      }
+      return res.json(results);
+      
+  })
+
+
+})
+
+
+
+
 app.listen(8080, () => {
     console.log("Server started on port 8080");
 })
