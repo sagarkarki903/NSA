@@ -12,28 +12,30 @@ import SignUp from './components/SignUp';
 const App = () => {
   const [user, setUser] = useState(null);
 
-  // Function to handle setting the user data after login
   const handleLogin = (userData) => {
-    setUser(userData); // Set user data without saving to localStorage
+    setUser(userData);
   };
 
-  // Function to handle logout
   const handleLogout = () => {
     setUser(null);
   };
 
   return (
     <Router>
-      <Navbar user={user} onLogout={handleLogout} />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login onLogin={handleLogin} />} />
-        <Route path="/signUp" element={<SignUp />} />
-      </Routes>
-      <Footer />
+      <div className="flex flex-col min-h-screen">
+        <Navbar user={user} onLogout={handleLogout} />
+        <main className="flex-grow">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login onLogin={handleLogin} />} />
+            <Route path="/signUp" element={<SignUp />} />
+          </Routes>
+        </main>
+        <Footer />
+      </div>
     </Router>
   );
 };
