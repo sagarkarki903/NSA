@@ -169,7 +169,7 @@ app.get("/", (req, res) => {
 });
 
 
-
+//eventsSummary Names matra from Event Summary table
 app.get('/eventsummary',(req, res)=>{
   const  q= "SELECT * FROM events_summary;";
   db.query(q, (err, results)=>{
@@ -185,7 +185,7 @@ app.get('/eventsummary',(req, res)=>{
 })
 
 
-
+//events from EventList Table contains full details of events
 app.get('/eventslist',(req, res)=>{
   const  q= "SELECT * FROM events_list ORDER BY year DESC;";
   db.query(q, (err, results)=>{
@@ -199,6 +199,25 @@ app.get('/eventslist',(req, res)=>{
 
 
 })
+
+//add events to event_summary table
+app.post('/eventsummary', (req, res) => {
+  const { event_name, event_username } = req.body;
+  const query = "INSERT INTO events_summary (`event_name`, `event_username`) VALUES (?, ?)";
+  
+  db.query(query, [event_name, event_username], (err, result) => {
+    if (err) {
+      // Check if the error is a duplicate entry error
+      if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ message: 'Event with this username already exists' });
+      }
+      console.error("Error adding event to summary:", err);
+      return res.status(500).json({ message: "Failed to add event to summary" });
+    }
+    res.status(201).json({ message: "Event added to summary successfully", eventId: result.insertId });
+  });
+});
+
 
 
 

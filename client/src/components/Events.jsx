@@ -6,6 +6,13 @@ import { Link } from 'react-router-dom';
 const Events=()=>{
 
     const [events, setEvents] = useState([]);
+    const [showForm, setShowForm] = useState(false);
+    const [formData, setFormData] = useState({
+      event_name: '',
+      event_username: '',
+    });
+    const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
+    
 
 
     const fetchAPI = async () => {
@@ -21,6 +28,34 @@ const Events=()=>{
         fetchAPI();
       }, []);
     
+      //handling form submission
+      const handleFormSubmit = async (e) => {
+        e.preventDefault();
+        setErrorMessage(''); // Clear any previous error messages
+
+        try {
+          await axios.post('http://localhost:8080/eventsummary', formData);
+          alert('Event added successfully');
+          setFormData({ event_name: '', event_username: '' }); // Clear the form
+          setShowForm(false); // Hide the form
+          fetchAPI(); // Refresh the events list
+        } catch (error) {
+            if (error.response && error.response.status === 409) {
+                setErrorMessage('Event with this username already exists'); // Set the duplicate entry error
+              } else {
+                console.error('Error adding event:', error);
+                alert('An error occurred while adding the event');
+              }
+        }
+      };
+    
+      //handling input change
+      const handleInputChange = (e) => {
+        setFormData({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
+      };
 
 return( 
 
@@ -52,13 +87,67 @@ return(
                   
                     </div>
             </Link>
+
+
           ))
         ) : (
           <p className='text-center text-gray-500'>No events available</p>
         )}
+            <br />
+
+
+            {/* Add Events */}
+         <button  className='bg-blue-500 text-white py-1 px-3 mr-2 rounded hover:bg-blue-600'
+         onClick={() => setShowForm(!showForm) }>
+                {showForm ? 'Cancel' : 'Add Event'}
+            </button>
+
+            {/* Show Form */}
+            {showForm && (
+            <form onSubmit={handleFormSubmit} className='mt-4'>
+              <div className='mb-3'>
+                <label htmlFor='event_name' className='block text-gray-700'>
+                  Event Name
+                </label>
+                <input
+                  type='text'
+                  id='event_name'
+                  name='event_name'
+                  value={formData.event_name}
+                  onChange={handleInputChange}
+                  required
+                  className='w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
+              </div>
+              <div className='mb-3'>
+                <label htmlFor='event_username' className='block text-gray-700'>
+                  Event Username
+                </label>
+                <input
+                  type='text'
+                  id='event_username'
+                  name='event_username'
+                  value={formData.event_username}
+                  onChange={handleInputChange}
+                  required
+                  className='w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
+                />
+              </div>
+              <button
+                type='submit'
+                className='bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600'
+              >
+                Submit
+              </button>
+              {errorMessage && (
+                <p className="text-red-500 mt-2">{errorMessage}</p> // Error message appears here
+                )}
+            </form>
+          )}
+            
       </div>
-
-
+       
+            
 
    
     </div>
