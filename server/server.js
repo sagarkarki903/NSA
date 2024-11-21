@@ -169,9 +169,9 @@ app.get("/", (req, res) => {
 });
 
 
-//eventsSummary Names matra from Event Summary table
-app.get('/eventsummary',(req, res)=>{
-  const  q= "SELECT * FROM events_summary;";
+// eventsSummary Names matra from Event Summary table
+app.get('/eventscategory',(req, res)=>{
+  const  q= "SELECT * FROM events_category;";
   db.query(q, (err, results)=>{
       if(err){
           console.log(err);
@@ -201,25 +201,39 @@ app.get('/eventslist',(req, res)=>{
 })
 
 //add events to event_summary table
-app.post('/eventsummary', (req, res) => {
-  const { event_name, event_username } = req.body;
-  const query = "INSERT INTO events_summary (`event_name`, `event_username`) VALUES (?, ?)";
+app.post('/eventscategory', (req, res) => {
+  const { category } = req.body;
+  const query = 'INSERT INTO events_category (category) VALUES (?)';
   
-  db.query(query, [event_name, event_username], (err, result) => {
+  db.query(query, [category], (err, result) => {
     if (err) {
-      // Check if the error is a duplicate entry error
       if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(409).json({ message: 'Event with this username already exists' });
+        // Handle duplicate entry error
+        return res.status(409).json({ message: 'Category already exists' });
       }
-      console.error("Error adding event to summary:", err);
-      return res.status(500).json({ message: "Failed to add event to summary" });
+      console.error('Error inserting category:', err);
+      return res.status(500).json({ message: 'Failed to add category' });
     }
-    res.status(201).json({ message: "Event added to summary successfully", eventId: result.insertId });
+    res.status(201).json({ message: 'Category added successfully' });
   });
 });
 
 
 
+//delete a id
+app.delete('/eventscategory/:id', (req, res) => {
+  const categoryId = req.params.id;
+  const query = 'DELETE FROM events_category WHERE category_id = ?';
+
+  db.query(query, [categoryId], (err, result) => {
+    if (err) {
+      console.error("Error deleting category:", err);
+      res.status(500).json({ message: "Failed to delete category" });
+    } else {
+      res.status(200).json({ message: "Category deleted successfully" });
+    }
+  });
+});
 
 
 app.listen(8080, () => {

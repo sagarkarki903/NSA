@@ -8,7 +8,8 @@ import Login from './components/Login';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import SignUp from './components/SignUp';
-import EventDetails from './components/EventDetails';
+import AllEvents from './components/AllEvents';
+// import EventDetails from './components/EventDetails';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -33,7 +34,7 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/signUp" element={<SignUp />} />
-            <Route path="/event/:event_username" element={<EventDetails />} />
+            <Route path="/event/:event_username" element={<AllEvents />} />
           </Routes>
         </main>
         <Footer />
