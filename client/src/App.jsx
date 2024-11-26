@@ -9,7 +9,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import SignUp from './components/SignUp';
 import AllEvents from './components/AllEvents';
-// import EventDetails from './components/EventDetails';
+import EventDetails from './components/EventDetails';
+
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -34,7 +35,9 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/signUp" element={<SignUp />} />
-            <Route path="/event/:event_username" element={<AllEvents />} />
+            <Route path="/event/:category_id" element={<AllEvents />} />
+            <Route path="/event/:category_id/:event_name" element={<EventDetails />} />
+
           </Routes>
         </main>
         <Footer />

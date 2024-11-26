@@ -95,7 +95,7 @@ return(
                     className='flex justify-between items-center p-3 border-b border-gray-200 hover:bg-gray-200 hover:shadow-md transition duration-200 ease-in-out'
                     >
                 <Link
-                    to={`/event/${event.category}`}
+                    to={`/event/${event.category_id}`}
                     key={index}
                     className="block"
               >

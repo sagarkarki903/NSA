@@ -7,6 +7,7 @@ const mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
 app.use(bodyParser.json());
+// const { v4: uuidv4 } = require('uuid');
 
 
 
@@ -43,7 +44,7 @@ db.connect((err) => {
 
 
 app.get('/userlist',(req, res)=>{
-        const  q= "SELECT * FROM users;";
+        const  q= "SELECT * FROM users ORDER BY first_name ASC;";
         db.query(q, (err, results)=>{
             if(err){
                 console.log(err);
@@ -186,21 +187,34 @@ app.get('/eventscategory',(req, res)=>{
 
 
 //events from EventList Table contains full details of events
-app.get('/eventslist',(req, res)=>{
-  const  q= "SELECT * FROM events_list ORDER BY year DESC;";
-  db.query(q, (err, results)=>{
-      if(err){
-          console.log(err);
+// app.get('/eventslist',(req, res)=>{
+//   const  q= "SELECT * FROM events_list ORDER BY year DESC;";
+//   db.query(q, (err, results)=>{
+//       if(err){
+//           console.log(err);
 
-      }
-      return res.json(results);
+//       }
+//       return res.json(results);
       
-  })
+//   })
+
+// })
+
+app.get('/eventslist/:category_id', (req, res) => {
+  const { category_id } = req.params;
+  const query = 'SELECT * FROM events_list WHERE category_id = ?';
+
+  db.query(query, [category_id], (err, results) => {
+    if (err) {
+      console.error('Error fetching events:', err);
+      return res.status(500).json({ message: 'Failed to fetch events' });
+    }
+    res.status(200).json(results);
+  });
+});
 
 
-})
-
-//add events to event_summary table
+//add event category to event_category table
 app.post('/eventscategory', (req, res) => {
   const { category } = req.body;
   const query = 'INSERT INTO events_category (category) VALUES (?)';
@@ -231,6 +245,47 @@ app.delete('/eventscategory/:id', (req, res) => {
       res.status(500).json({ message: "Failed to delete category" });
     } else {
       res.status(200).json({ message: "Category deleted successfully" });
+    }
+  });
+});
+
+
+app.post('/eventslist', (req, res) => {
+  const { category_id, event_name } = req.body;
+
+  // Validate input
+  if (!category_id || !event_name) {
+    return res.status(400).json({ message: 'Invalid data. category_id and event_name are required.' });
+  }
+
+  const query = 'INSERT INTO events_list (`category_id`, `event_name`) VALUES (?, ?)';
+
+  db.query(query, [category_id, event_name], (err, result) => {
+    if (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        // Duplicate event_name within the same category detected
+        return res.status(409).json({ 
+          message: `The event "${event_name}" already exists in category ${category_id}.` 
+        });
+      }
+      console.error('Error inserting event:', err);
+      return res.status(500).json({ message: 'Failed to add Event' });
+    }
+    res.status(201).json({ message: 'Event added successfully' });
+  });
+});
+
+//delete event from events_list based on event_name
+app.delete('/eventslist/:id', (req, res) => {
+  const eventId = req.params.id;
+  const query = 'DELETE FROM events_list WHERE event_id = ?';
+
+  db.query(query, [eventId], (err, result) => {
+    if (err) {
+      console.error("Error deleting event:", err);
+      res.status(500).json({ message: "Failed to delete event" });
+    } else {
+      res.status(200).json({ message: "Event deleted event" });
     }
   });
 });
