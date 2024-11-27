@@ -5,7 +5,7 @@ const Navbar = ({ user, onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-maroon-700 text-white">
+    <nav style={{ backgroundColor: '#800000' }} className="text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
@@ -14,8 +14,10 @@ const Navbar = ({ user, onLogout }) => {
           <div className="hidden md:flex space-x-4">
             <Link to="/" className="hover:text-gray-300">Home</Link>
             <Link to="/about" className="hover:text-gray-300">About Us</Link>
-            <Link to="/events" className="hover:text-gray-300">Events</Link>
+            <Link to="/events" className="hover:text-gray-300">Past Events</Link>
             <Link to="/contact" className="hover:text-gray-300">Contact Us</Link>
+            <Link to="/" className="hover:text-gray-300">Users</Link>
+
             {user ? (
               <>
                 <span className="hover:text-gray-300">Welcome, {user.username}</span>

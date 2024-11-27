@@ -4,12 +4,15 @@ import axios from 'axios';
 import { useParams, Link } from 'react-router-dom';
 
 const AllEvents = () => {
+  
   const { category_id } = useParams(); // Get category_id from the URL
   const [allEvents, setAllEvents] = useState([]); // Proper casing
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [newEventName, setNewEventName] = useState(''); // State for new event name
   const [message, setMessage] = useState('');
   const [showForm, setShowForm] = useState(false);
+
+
 
   const fetchAPI = async () => {
     try {

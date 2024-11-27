@@ -170,7 +170,7 @@ app.get("/", (req, res) => {
 });
 
 
-// eventsSummary Names matra from Event Summary table
+// eventsCategory Names matra from Event events_category table
 app.get('/eventscategory',(req, res)=>{
   const  q= "SELECT * FROM events_category;";
   db.query(q, (err, results)=>{
@@ -185,24 +185,23 @@ app.get('/eventscategory',(req, res)=>{
 
 })
 
+//get events details for Event Details component from events_list table 
+app.get('/eventslist', (req, res) => {
+  const q = "SELECT * FROM events_list";
 
-//events from EventList Table contains full details of events
-// app.get('/eventslist',(req, res)=>{
-//   const  q= "SELECT * FROM events_list ORDER BY year DESC;";
-//   db.query(q, (err, results)=>{
-//       if(err){
-//           console.log(err);
+  db.query(q, (err, results) => {
+    if(err){
+      console.log(err);
+    }
+    return res.json(results);
+  })
+})
 
-//       }
-//       return res.json(results);
-      
-//   })
 
-// })
 
 app.get('/eventslist/:category_id', (req, res) => {
   const { category_id } = req.params;
-  const query = 'SELECT * FROM events_list WHERE category_id = ?';
+  const query = 'SELECT * FROM events_list WHERE category_id = ? ORDER BY event_name DESC';
 
   db.query(query, [category_id], (err, results) => {
     if (err) {
@@ -289,6 +288,59 @@ app.delete('/eventslist/:id', (req, res) => {
     }
   });
 });
+
+
+app.put('/eventscategory/:id', (req, res) => {
+  const categoryId = req.params.id; // Extract the id from the route
+  const { category } = req.body; // Extract only the category from the request body
+
+  const query = 'UPDATE events_category SET category = ? WHERE category_id = ?';
+
+  db.query(query, [category, categoryId], (err, result) => {
+    if (err) {
+      console.error("Error updating category:", err);
+      res.status(500).json({ message: "Failed to update category" });
+    } else if (result.affectedRows === 0) {
+      res.status(404).json({ message: "Category not found" });
+    } else {
+      res.status(200).json({ message: "Category updated successfully" });
+    }
+  });
+});
+
+
+
+//For editing the event details in Event Detail Component
+// Update event details in the events_list table
+app.put('/eventslist/:id', (req, res) => {
+  const eventId = req.params.id;
+  const { event_name, event_date, location, budget, links, event_documentation, event_image } = req.body;
+
+  const query = `
+    UPDATE events_list
+    SET event_name = ?, event_date = ?, location = ?, budget = ?, links = ?, event_documentation = ?, event_image = ?
+    WHERE event_id = ?`;
+
+  db.query(
+    query,
+    [event_name, event_date, location, budget, links, event_documentation, event_image, eventId],
+    (err, result) => {
+      if (err) {
+        console.error('Error updating event:', err);
+        return res.status(500).json({ message: 'Failed to update event.' });
+      }
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: 'Event not found.' });
+      }
+      res.status(200).json({ message: 'Event updated successfully.' });
+    }
+  );
+});
+
+
+
+
+
 
 
 app.listen(8080, () => {
