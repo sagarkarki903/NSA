@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import SignUp from './components/SignUp';
 import AllEvents from './components/AllEvents';
 import EventDetails from './components/EventDetails';
+import Rough from './components/Rough';
 
 
 const App = () => {
@@ -37,6 +38,8 @@ const App = () => {
             <Route path="/signUp" element={<SignUp />} />
             <Route path="/event/:category_id" element={<AllEvents />} />
             <Route path="/event/:category_id/:event_name" element={<EventDetails />} />
+            <Route path="/rough" element={<Rough />} />
+          
 
           </Routes>
         </main>

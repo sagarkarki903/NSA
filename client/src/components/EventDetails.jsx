@@ -57,7 +57,7 @@ const EventDetails = () => {
         Event Details for {eventDetails.event_name}
       </h1>
       <div className="bg-white shadow-md rounded-lg max-w-3xl mx-auto">
-        <div className="bg-[#852633] p-4 rounded-t-lg flex justify-center">
+        <div className="bg-[#800000] p-4 rounded-t-lg flex justify-center">
           <img src={nsaLogo} alt="ULM Logo" className="h-10 rounded-full" />
         </div>
         <div className="p-4">
@@ -225,6 +225,46 @@ const EventDetails = () => {
           )}
         </div>
       </div>
+
+     
+    {/* Review section, just a design */}
+    <div
+  className="review-section w-full border-t border-gray-300 bg-gray-100 shadow-md p-4 mt-6
+             lg:w-full lg:border-t lg:mt-4"
+>
+  <h2 className="text-lg font-bold text-gray-700">User Reviews</h2>
+  <div className="space-y-4 mt-4">
+    {/* Review 1 */}
+    <div className="bg-white p-4 rounded-md shadow">
+      <p className="font-semibold text-gray-800">John Doe</p>
+      <p className="text-yellow-500">⭐⭐⭐⭐⭐</p>
+      <p className="text-gray-600 mt-2">
+        This event was fantastic! Everything was well-organized and fun.
+      </p>
+    </div>
+
+    {/* Review 2 */}
+    <div className="bg-white p-4 rounded-md shadow">
+      <p className="font-semibold text-gray-800">Jane Smith</p>
+      <p className="text-yellow-500">⭐⭐⭐⭐</p>
+      <p className="text-gray-600 mt-2">
+        Great event, but the seating arrangement could be improved.
+      </p>
+    </div>
+
+    {/* Add Review Button */}
+    <div className="mt-6">
+      <button
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Add Your Review
+      </button>
+    </div>
+  </div>
+</div>
+
+
+
     </div>
   );
 };
