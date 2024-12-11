@@ -2,12 +2,21 @@ import React, { useState, useEffect } from 'react';
 import nsaLogo from '../assets/nsaLogo.png';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { Rating } from '@smastrom/react-rating';
+import '@smastrom/react-rating/style.css';
+
 
 const EventDetails = () => {
   const { category_id, event_name } = useParams(); // Extract category_id and event_name from the URL
   const [eventDetails, setEventDetails] = useState({}); // Store the current event details
   const [isEditing, setIsEditing] = useState(false); // Toggle for edit mode
   const [message, setMessage] = useState(''); // Message for success or errors
+  const [showForm, setShowForm] = useState(false);
+  const [review, setReview] = useState('');
+  const [ratingstar, setRatingStar] = useState(null);
+  const[fetchedReview, setFetchedReview] = useState([]);
+  
+
 
   const fetchAPI = async () => {
     try {
@@ -50,6 +59,71 @@ const EventDetails = () => {
       }, 3000);
     }
   };
+
+  //The following is for review section
+  const handleReviewChange = (e) => {
+      setReview(e.target.value);
+  };
+
+  const handleAddReview = () => {
+    setShowForm(true);
+
+  }
+
+  const handleCancelReview = ()=> {
+    setReview('');
+    setShowForm(false);
+  }
+
+  const handlePostReview = async ()=> {
+    try{
+    const reviewData = {
+      event_id: eventDetails.event_id,
+      review: review,
+      rating: ratingstar,
+      event_name: eventDetails.event_name
+    };
+      //using optimistic update to display the reviews immediately after clicking post 
+      const tempReview = { ...reviewData};//creating a copy to prevent server state issues
+      setFetchedReview((prevReviews) => [...prevReviews, tempReview])
+
+    const response = await axios.post("http://localhost:8080/add-review", reviewData);
+    alert("Review Added Successfully");
+    setShowForm(false);
+    setReview('');
+    setRatingStar(null);
+  } catch(error){
+    console.log("Error adding review", error);
+
+    // Rollback: Remove the optimistically added review
+    setFetchedReview((prevReviews) => prevReviews.filter((r) => r !== tempReview));
+
+    alert("Failed to add review. Please try again.");
+  } 
+  }
+
+  //This is for fetching reviews data
+  const DisplayReviews = async ()=> {
+        try {
+          const response = await axios.get('http://localhost:8080/fetch-reviews');
+          setFetchedReview(response.data); // Store fetched data in state
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+        
+      };
+
+    useEffect(() => {
+        DisplayReviews();
+      }, []);
+
+    
+      const filteredReviews = fetchedReview.filter(
+        (review) =>
+          review.event_id &&
+          eventDetails.event_id &&
+          review.event_id === eventDetails.event_id
+      );
 
   return (
     <div className="bg-gray-100 p-6 min-h-screen">
@@ -227,44 +301,78 @@ const EventDetails = () => {
       </div>
 
      
-    {/* Review section, just a design */}
+
     <div
   className="review-section w-full border-t border-gray-300 bg-gray-100 shadow-md p-4 mt-6
              lg:w-full lg:border-t lg:mt-4"
 >
-  <h2 className="text-lg font-bold text-gray-700">User Reviews</h2>
+  <h2 className="text-lg font-bold text-gray-700">Reviews</h2>
   <div className="space-y-4 mt-4">
-    {/* Review 1 */}
-    <div className="bg-white p-4 rounded-md shadow">
-      <p className="font-semibold text-gray-800">John Doe</p>
-      <p className="text-yellow-500">⭐⭐⭐⭐⭐</p>
+   
+    {filteredReviews.length === 0 ? (
+      <p>No reviews yet.</p>
+    ): (
+      
+      filteredReviews.map((review, index) => (
+       <div key={index} className="bg-white p-4 rounded-md shadow">
+      <p className="font-semibold text-gray-800">{review.event_name}</p>
+      <Rating value={review.rating} readOnly style={{ maxWidth: 100 }} />
+      <p className="text-gray-600 mt-2">{review.review}</p>
+    </div>
+      ))
+    )}
+    {showForm && (
+      <div className="bg-white p-4 rounded-md shadow">
+      <p className="font-semibold text-gray-800">Anonymous</p>
+      <Rating
+        value={ratingstar}
+        onChange={setRatingStar}
+        style={{ maxWidth: 150 }}
+      />
       <p className="text-gray-600 mt-2">
-        This event was fantastic! Everything was well-organized and fun.
+        <textarea
+          value={review}
+          onChange={handleReviewChange}
+          className="border border-gray-400 w-96 h-24 px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
+          placeholder="Type your review"
+          />  
       </p>
+      <div className="mt-4 space-x-4">
+            <button
+              onClick={handlePostReview}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Post
+            </button>
+            <button
+              onClick={handleCancelReview}
+              className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Cancel
+            </button>
+        
+        </div>
     </div>
 
-    {/* Review 2 */}
-    <div className="bg-white p-4 rounded-md shadow">
-      <p className="font-semibold text-gray-800">Jane Smith</p>
-      <p className="text-yellow-500">⭐⭐⭐⭐</p>
-      <p className="text-gray-600 mt-2">
-        Great event, but the seating arrangement could be improved.
-      </p>
+    )}
+
+        {/* Review Add Cancel Button Logic */}
+        <div className="mt-4 space-x-4">
+            <button
+              onClick={handleAddReview}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none"
+            >
+              Add Review
+            </button>
+            
+        
+        </div>
+   
+        
+
+      {/* //////////////////// */}
+      </div> 
     </div>
-
-    {/* Add Review Button */}
-    <div className="mt-6">
-      <button
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Add Your Review
-      </button>
-    </div>
-  </div>
-</div>
-
-
-
     </div>
   );
 };

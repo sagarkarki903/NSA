@@ -185,6 +185,26 @@ app.get('/eventscategory',(req, res)=>{
 
 })
 
+//added at last by Sagar. Ask him why. This is basically to show the category inside all events
+app.get('/eventscategory/:category_id', (req, res) => {
+  const { category_id } = req.params;
+  const query = 'SELECT category FROM events_category WHERE category_id = ?';
+
+  db.query(query, [category_id], (err, results) => {
+    if (err) {
+      console.error('Error fetching category:', err);
+      return res.status(500).json({ message: 'Failed to fetch category' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Category not found' });
+    }
+
+    res.status(200).json(results[0]); // Return the category name
+  });
+});
+
+
 //get events details for Event Details component from events_list table 
 app.get('/eventslist', (req, res) => {
   const q = "SELECT * FROM events_list";
@@ -339,6 +359,32 @@ app.put('/eventslist/:id', (req, res) => {
 
 
 
+
+
+// Adding a route to push rating number to database
+app.post("/add-review", (req, res) => {
+  const {review, event_id, event_name, rating} = req.body;
+  const q = "INSERT INTO reviews (review, event_id, event_name, rating) VALUES (?,?,?, ?)"
+  
+  db.query(q, [review, event_id, event_name, rating], (err, result) => {
+    if(err){
+      return res.status(500).json({message: 'Failed to add review'});
+    }
+    res.status(201).json({message: "Review Added Successfully"});
+  });
+});
+
+// Adding a route to FETCH the data from review table
+app.get("/fetch-reviews", (req, res) => {
+  const q = "SELECT event_id, review, rating FROM reviews";
+  db.query(q, (err, results) => {
+    if(err){
+      console.error("Error fetching reviews: ", err);
+      return res.status(500).json({message: "Error Fetching Reviews"});
+    }
+    res.status(200).json(results);
+  });
+});
 
 
 

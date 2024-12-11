@@ -11,6 +11,7 @@ const AllEvents = () => {
   const [newEventName, setNewEventName] = useState(''); // State for new event name
   const [message, setMessage] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [categoryName, setCategoryName] = useState(''); // State to store category name
 
 
 
@@ -18,6 +19,8 @@ const AllEvents = () => {
     try {
       const response = await axios.get(`http://localhost:8080/eventslist/${category_id}`);
       setFilteredEvents(response.data); // Directly set filtered events
+      const categoryResponse = await axios.get(`http://localhost:8080/eventscategory/${category_id}`);
+      setCategoryName(categoryResponse.data.category);
     } catch (error) {
       console.error('Error fetching data', error);
     }
@@ -81,7 +84,7 @@ const AllEvents = () => {
   return (
     <div className='bg-gray-100 p-6 min-h-screen'>
       <h1 className='text-2xl font-bold text-center mb-6 text-gray-700'>
-        All Events
+        All {categoryName} Events
       </h1>
       <div className='bg-white shadow-md rounded-lg max-w-3xl mx-auto'>
         <div className='bg-maroon-700 p-4 rounded-t-lg flex justify-center'>
@@ -112,7 +115,8 @@ const AllEvents = () => {
             ))
           ) : (
             <p className='text-center text-gray-500'>
-              No events available for category {category_id}.
+              No events available for category {categoryName}.
+              {filteredEvents.category}
             </p>
           )}
 
