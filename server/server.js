@@ -1,211 +1,224 @@
-require("dotenv").config(); //loading environment variables
+require("dotenv").config(); // Load environment variables
 
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const mysql = require("mysql2");
 const bodyParser = require("body-parser");
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const rateLimit = require("express-rate-limit");
+
 app.use(bodyParser.json());
-// const { v4: uuidv4 } = require('uuid');
 
-
-
-//setting up cors so that our backend server accepts request from our frontend 
+// Set up CORS to allow requests from the frontend
 const corsOptions = {
-    origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173"], // Frontend URL
 };
-
 app.use(cors(corsOptions));
 
+// Set up rate limiting to prevent abuse
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests, please try again later.",
+});
+app.use(limiter);
 
-
-
-//Creating database connection
-const db = mysql.createConnection(
-    {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-    }
-);
-
-
-//Connect to database
-db.connect((err) => {
-    if(err) {
-        console.log("Error Connecting to the database", err);
-        return;
-    }
-    console.log("connected to the MySQL Database");
-    
+// Create a connection pool
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "",
+  database: process.env.DB_NAME || "test",
+  waitForConnections: true,
+  connectionLimit: 10, // Adjust based on your server's capacity
+  queueLimit: 0,
 });
 
+// Middleware for JWT authentication
+const authenticateToken = (req, res, next) => {
+  const token = req.headers["authorization"]?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Access denied, no token provided" });
+  }
+  jwt.verify(token, process.env.JWT_SECRET || "your_jwt_secret", (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: "Invalid or expired token" });
+    }
+    req.user = user; // Attach decoded user info to the request
+    next();
+  });
+};
 
-app.get('/userlist',(req, res)=>{
-        const  q= "SELECT * FROM users ORDER BY first_name ASC;";
-        db.query(q, (err, results)=>{
-            if(err){
-                console.log(err);
+// Middleware for role-based access
+const authorizeRole = (requiredRole) => {
+  return (req, res, next) => {
+    const user = req.user; // This is set in `authenticateToken`
+    if (user.role !== requiredRole) {
+      return res.status(403).json({ message: "Access denied. Insufficient privileges." });
+    }
+    next();
+  };
+};
 
-            }
-            return res.json(results);
-            
-        })
+// Centralized error handler
+const handleError = (res, status, message) => {
+  return res.status(status).json({ message });
+};
 
+// Login route with JWT
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  const query = "SELECT * FROM users WHERE email = ?";
+  try {
+    const [results] = await pool.promise().query(query, [email]);
+    if (results.length === 0) {
+      return handleError(res, 400, "Invalid credentials");
+    }
 
-})
+    const user = results[0];
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return handleError(res, 400, "Invalid credentials");
+    }
 
+    // Generate JWT with role
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || "your_jwt_secret",
+      { expiresIn: "1h" }
+    );
 
-app.post('/userlist', async (req, res) => {
-  const q = "INSERT INTO users (`username`, `email`, `first_name`, `last_name`, `password`, `role`, `classification`) VALUES (?,?,?,?,?,?,?)";
+    res.status(200).json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+    handleError(res, 500, "An error occurred during login");
+  }
+});
+
+// Register a new user
+app.post("/userlist", async (req, res) => {
+  const { username, email, first_name, last_name, password, role, classification } = req.body;
+
+  // Validate input fields
+  if (!email || !password || !username || !first_name || !last_name) {
+    return res.status(400).json({ message: "All fields are required." });
+  }
+
+  // Ensure the role is valid
+  const validRoles = ["Member", "Board Member", "President", "Vice President"];
+  if (role && !validRoles.includes(role)) {
+    return res.status(400).json({ message: `Invalid role. Valid roles are: ${validRoles.join(", ")}` });
+  }
 
   try {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds); // Await the hash process
+    // Hash the password before saving to the database
+    const hashedPassword = await bcrypt.hash(password, 10);
 
+    const query =
+      "INSERT INTO users (username, email, first_name, last_name, password, role, classification) VALUES (?, ?, ?, ?, ?, ?, ?)";
     const values = [
-      req.body.username,
-      req.body.email,
-      req.body.first_name,
-      req.body.last_name,
-      hashedPassword, // Use the hashed password here
-      req.body.role || 'Member',
-      req.body.classification,
+      username,
+      email,
+      first_name,
+      last_name,
+      hashedPassword,
+      role || "Member", // Default role to "Member"
+      classification || "Other", // Default classification to "Other"
     ];
 
-    // Execute the database query
-    db.query(q, values, (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Error registering user', error: err });
-      }
-      return res.status(201).json({ message: 'User registered successfully!', results });
-    });
-  } catch (error) {
-    console.error('Password hashing error:', error);
-    return res.status(500).json({ message: 'Error hashing password', error });
+    await pool.promise().query(query, values);
+    res.status(201).json({ message: "User registered successfully!" });
+  } catch (err) {
+    console.error("Error registering user:", err);
+    handleError(res, 500, "Error registering user");
   }
 });
 
-app.post('/login', async (req, res)=>{
-  const {email, password}= req.body;
-  const q = `select * from users where email = ?`;
+
+// Fetch all users (accessible only to President)
+app.get("/userlist", authenticateToken, authorizeRole("President"), async (req, res) => {
+  const query = "SELECT * FROM users ORDER BY first_name ASC;";
   try {
-    // Step 1: Check if the user exists in the database by their email
-    const q = "SELECT * FROM users WHERE email = ?";
-    db.query(q, [email], async (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).json({ message: 'Database error' });
-      }
-
-      // Step 2: If the user doesn't exist, return an error
-      if (results.length === 0) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-
-      const user = results[0];
-
-      // Step 3: Compare the entered password with the stored hashed password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Invalid credentials' });
-      }
-
-      // Step 4: Password is correct, log the user in
-      res.status(200).json({ message: 'Login successful' });
-    });
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error', error });
+    const [results] = await pool.promise().query(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    res.status(500).json({ message: "Error fetching users." });
   }
-
-
-
-
 });
 
 
+// Only 'President' can delete users
+app.delete("/users/:id", authenticateToken, authorizeRole("President"), async (req, res) => {
+  const userId = req.params.id;
+  const query = "DELETE FROM users WHERE id = ?";
+  try {
+    await pool.promise().query(query, [userId]);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting user:", err);
+    handleError(res, 500, "Failed to delete user");
+  }
+});
 
+// Update a user's details
+app.put("/users/:id", authenticateToken, async (req, res) => {
+  const userId = req.params.id;
+  const { username, first_name, last_name, email, role, classification } = req.body;
+  const query =
+    "UPDATE users SET username = ?, first_name = ?, last_name = ?, email = ?, role = ?, classification = ? WHERE id = ?";
+  try {
+    await pool.promise().query(query, [username, first_name, last_name, email, role, classification, userId]);
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (err) {
+    console.error("Error updating user:", err);
+    handleError(res, 500, "Failed to update user");
+  }
+});
 
-//delete a id
-app.delete('/users/:id', (req, res) => {
-    const userId = req.params.id;
-    const query = 'DELETE FROM users WHERE id = ?';
-  
-    db.query(query, [userId], (err, result) => {
-      if (err) {
-        console.error("Error deleting user:", err);
-        res.status(500).json({ message: "Failed to delete user" });
-      } else {
-        res.status(200).json({ message: "User deleted successfully" });
-      }
-    });
-  });
-  
-  //update an id
-app.put('/users/:id', (req, res) => {
-    const userId = req.params.id;
-    const { username, first_name, last_name, email, role, classification} = req.body;
-    const query = 'UPDATE users SET username = ?, first_name = ?, last_name = ?, email = ?, role = ?, classification = ? WHERE id = ?';
-  
-    db.query(query, [username, first_name, last_name, email, role,  classification, userId  ], (err, result) => {
-      if (err) {
-        console.error("Error updating user:", err);
-        res.status(500).json({ message: "Failed to update user" });
-      } else {
-        res.status(200).json({ message: "User updated successfully" });
-      }
-    });
-  });
-  
-
-//setting routes
-app.get("/", (req, res) => {
-    //res.redirect("http://localhost:5173/");
-    res.send("hello");
-    console.log("redirected successful");
+/////////////added from old///////////////////////
+app.get('/eventscategory', async (req, res) => {
+  const q = "SELECT * FROM events_category;";
+  try {
+    const [results] = await pool.promise().query(q);
+    return res.json(results);
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    res.status(500).json({ message: "Failed to fetch categories." });
+  }
 });
 
 
-// eventsCategory Names matra from Event events_category table
-app.get('/eventscategory',(req, res)=>{
-  const  q= "SELECT * FROM events_category;";
-  db.query(q, (err, results)=>{
-      if(err){
-          console.log(err);
-
-      }
-      return res.json(results);
-      
-  })
-
-
-})
-
-//added at last by Sagar. Ask him why. This is basically to show the category inside all events
-app.get('/eventscategory/:category_id', (req, res) => {
+app.get('/eventscategory/:category_id', async (req, res) => {
   const { category_id } = req.params;
   const query = 'SELECT category FROM events_category WHERE category_id = ?';
 
-  db.query(query, [category_id], (err, results) => {
-    if (err) {
-      console.error('Error fetching category:', err);
-      return res.status(500).json({ message: 'Failed to fetch category' });
-    }
-
+  try {
+    const [results] = await pool.promise().query(query, [category_id]);
+    
     if (results.length === 0) {
       return res.status(404).json({ message: 'Category not found' });
     }
 
     res.status(200).json(results[0]); // Return the category name
-  });
+  } catch (err) {
+    console.error('Error fetching category:', err);
+    res.status(500).json({ message: 'Failed to fetch category' });
+  }
 });
 
-
-//get events details for Event Details component from events_list table 
 app.get('/eventslist', (req, res) => {
   const q = "SELECT * FROM events_list";
 
@@ -216,22 +229,6 @@ app.get('/eventslist', (req, res) => {
     return res.json(results);
   })
 })
-
-
-
-app.get('/eventslist/:category_id', (req, res) => {
-  const { category_id } = req.params;
-  const query = 'SELECT * FROM events_list WHERE category_id = ? ORDER BY event_name DESC';
-
-  db.query(query, [category_id], (err, results) => {
-    if (err) {
-      console.error('Error fetching events:', err);
-      return res.status(500).json({ message: 'Failed to fetch events' });
-    }
-    res.status(200).json(results);
-  });
-});
-
 
 //add event category to event_category table
 app.post('/eventscategory', (req, res) => {
@@ -251,64 +248,64 @@ app.post('/eventscategory', (req, res) => {
   });
 });
 
-
-
-//delete a id
-app.delete('/eventscategory/:id', (req, res) => {
+//delete a eventcategory id
+app.delete('/eventscategory/:id', async (req, res) => {
   const categoryId = req.params.id;
-  const query = 'DELETE FROM events_category WHERE category_id = ?';
-
-  db.query(query, [categoryId], (err, result) => {
-    if (err) {
-      console.error("Error deleting category:", err);
-      res.status(500).json({ message: "Failed to delete category" });
-    } else {
-      res.status(200).json({ message: "Category deleted successfully" });
-    }
-  });
+  const query = "DELETE FROM events_category WHERE category_id = ?";
+  try {
+    await pool.promise().query(query, [categoryId]);
+    res.status(200).json({ message: "Category deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting category:", err);
+    res.status(500).json({ message: "Failed to delete category" });
+  }
 });
 
+//////////////////////////////////////////////////////
 
-app.post('/eventslist', (req, res) => {
+// Add event
+app.post("/eventslist", async (req, res) => {
   const { category_id, event_name } = req.body;
-
-  // Validate input
-  if (!category_id || !event_name) {
-    return res.status(400).json({ message: 'Invalid data. category_id and event_name are required.' });
+  if (!event_name || !category_id) {
+    return res.status(400).json({ message: "Event name and category are required." });
   }
 
-  const query = 'INSERT INTO events_list (`category_id`, `event_name`) VALUES (?, ?)';
-
-  db.query(query, [category_id, event_name], (err, result) => {
-    if (err) {
-      if (err.code === 'ER_DUP_ENTRY') {
-        // Duplicate event_name within the same category detected
-        return res.status(409).json({ 
-          message: `The event "${event_name}" already exists in category ${category_id}.` 
-        });
-      }
-      console.error('Error inserting event:', err);
-      return res.status(500).json({ message: 'Failed to add Event' });
-    }
-    res.status(201).json({ message: 'Event added successfully' });
-  });
+  const query = "INSERT INTO events_list (category_id, event_name) VALUES (?, ?)";
+  try {
+    await pool.promise().query(query, [category_id, event_name]);
+    res.status(201).json({ message: "Event added successfully." });
+  } catch (err) {
+    console.error("Error adding event:", err);
+    handleError(res, 500, "Error adding event.");
+  }
 });
 
-//delete event from events_list based on event_name
-app.delete('/eventslist/:id', (req, res) => {
-  const eventId = req.params.id;
-  const query = 'DELETE FROM events_list WHERE event_id = ?';
-
-  db.query(query, [eventId], (err, result) => {
-    if (err) {
-      console.error("Error deleting event:", err);
-      res.status(500).json({ message: "Failed to delete event" });
-    } else {
-      res.status(200).json({ message: "Event deleted event" });
-    }
-  });
+// Fetch events by category
+app.get("/eventslist/:category_id", async (req, res) => {
+  const categoryId = req.params.category_id;
+  const query = "SELECT * FROM events_list WHERE category_id = ? ORDER BY event_name DESC";
+  try {
+    const [results] = await pool.promise().query(query, [categoryId]);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error fetching events:", err);
+    handleError(res, 500, "Error fetching events.");
+  }
 });
+//put to be added here........................
 
+// Delete event
+app.delete("/eventslist/:event_id", async (req, res) => {
+  const eventId = req.params.event_id;
+  const query = "DELETE FROM events_list WHERE event_id = ?";
+  try {
+    await pool.promise().query(query, [eventId]);
+    res.status(200).json({ message: "Event deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting event:", err);
+    handleError(res, 500, "Failed to delete event.");
+  }
+});
 
 app.put('/eventscategory/:id', (req, res) => {
   const categoryId = req.params.id; // Extract the id from the route
@@ -332,63 +329,82 @@ app.put('/eventscategory/:id', (req, res) => {
 
 //For editing the event details in Event Detail Component
 // Update event details in the events_list table
-app.put('/eventslist/:id', (req, res) => {
+app.put('/eventslist/:id', async (req, res) => {
   const eventId = req.params.id;
   const { event_name, event_date, location, budget, links, event_documentation, event_image } = req.body;
+
+  // Validate required fields
+  if (!event_name || !event_date || !location || !budget) {
+    return res.status(400).json({ message: "Missing required fields: event_name, event_date, location, or budget." });
+  }
 
   const query = `
     UPDATE events_list
     SET event_name = ?, event_date = ?, location = ?, budget = ?, links = ?, event_documentation = ?, event_image = ?
     WHERE event_id = ?`;
 
-  db.query(
-    query,
-    [event_name, event_date, location, budget, links, event_documentation, event_image, eventId],
-    (err, result) => {
-      if (err) {
-        console.error('Error updating event:', err);
-        return res.status(500).json({ message: 'Failed to update event.' });
-      }
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ message: 'Event not found.' });
-      }
-      res.status(200).json({ message: 'Event updated successfully.' });
+  try {
+    const [result] = await pool.promise().query(query, [
+      event_name,
+      event_date,
+      location,
+      budget,
+      links,
+      event_documentation,
+      event_image,
+      eventId,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Event not found." });
     }
-  );
+
+    res.status(200).json({ message: "Event updated successfully." });
+  } catch (err) {
+    console.error("Error updating event:", err);
+    res.status(500).json({ message: "Failed to update event." });
+  }
 });
 
+app.post("/add-review", authenticateToken, async (req, res) => {
+  const { review, event_id, event_name, rating, user_name } = req.body;
 
+  // Validate input
+  if (!review || !event_id || !event_name || !rating) {
+    return res.status(400).json({ message: "All fields (review, event_id, event_name, rating, user_name) are required." });
+  }
 
+  // Ensure rating is between 1 and 5
+  if (rating < 1 || rating > 5) {
+    return res.status(400).json({ message: "Rating must be between 1 and 5." });
+  }
 
+  const query = "INSERT INTO reviews (review, event_id, event_name, rating, user_name) VALUES (?, ?, ?, ?, ?)";
 
-// Adding a route to push rating number to database
-app.post("/add-review", (req, res) => {
-  const {review, event_id, event_name, rating} = req.body;
-  const q = "INSERT INTO reviews (review, event_id, event_name, rating) VALUES (?,?,?, ?)"
-  
-  db.query(q, [review, event_id, event_name, rating], (err, result) => {
-    if(err){
-      return res.status(500).json({message: 'Failed to add review'});
-    }
-    res.status(201).json({message: "Review Added Successfully"});
-  });
+  try {
+    await pool.promise().query(query, [review, event_id, event_name, rating, user_name]);
+    res.status(201).json({ message: "Review added successfully." });
+  } catch (err) {
+    console.error("Error adding review:", err);
+    res.status(500).json({ message: "Failed to add review." });
+  }
 });
+
 
 // Adding a route to FETCH the data from review table
-app.get("/fetch-reviews", (req, res) => {
-  const q = "SELECT event_id, review, rating FROM reviews";
-  db.query(q, (err, results) => {
-    if(err){
-      console.error("Error fetching reviews: ", err);
-      return res.status(500).json({message: "Error Fetching Reviews"});
-    }
+app.get("/fetch-reviews", async (req, res) => {
+  const query = "SELECT event_id, review, rating, user_name FROM reviews"; // Check this query
+  try {
+    const [results] = await pool.promise().query(query); // Ensure `pool` is defined and used
     res.status(200).json(results);
-  });
+  } catch (err) {
+    console.error("Error fetching reviews:", err);
+    res.status(500).json({ message: "Error fetching reviews" });
+  }
 });
 
 
-
-
+// Start the server
 app.listen(8080, () => {
-    console.log("Server started on port 8080");
-})
+  console.log("Server started on port 8080");
+});

@@ -1,110 +1,110 @@
-
-// .......................EVENTS Categories.................................................
-
-import nsaLogo from '../assets/nsaLogo.png';
-import axios from 'axios';
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-
-const Events=()=>{
-
-    const [events, setEvents] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [formData, setFormData] = useState({
-      category: '',
-    });
-    const [errorMessage, setErrorMessage] = useState(''); // State to store the error message
-    const [editingCategoryId, setEditingCategoryId] = useState(null); // ID of the category being edited
-    const [updatedCategoryName, setUpdatedCategoryName] = useState(''); // Updated category name
-
-    
+import nsaLogo from "../assets/nsaLogo.png";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 
-    const fetchAPI = async () => {
-        try {
-          const response = await axios.get("http://localhost:8080/eventscategory");
-          setEvents(response.data);
-        } catch (error) {
-          console.error("Error fetching data", error);
-        }
-      };
 
-      useEffect(() => {
-        fetchAPI();
+const Events = ({ user }) => {
+  const [events, setEvents] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    category: "",
+  });
+  const [errorMessage, setErrorMessage] = useState("");
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [updatedCategoryName, setUpdatedCategoryName] = useState("");
+
+  const fetchAPI = async () => {
+    try {
+      const response = await axios.get("http://localhost:8080/eventscategory");
+      setEvents(response.data);
+    } catch (error) {
+      console.error("Error fetching data", error);
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchAPI();
+  }, []);
+
+  // Handle form submission for adding a new category
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage("");
+
+    try {
+      await axios.post("http://localhost:8080/eventscategory", formData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-    
-      //handling form submission
-      const handleFormSubmit = async (e) => {
-        e.preventDefault();
-        setErrorMessage(''); // Clear any previous error messages
+      alert("Category added successfully");
+      setFormData({ category: "" });
+      setShowForm(false);
+      fetchAPI();
+    } catch (error) {
+      if (error.response && error.response.status === 409) {
+        setErrorMessage("This category already exists");
+      } else {
+        console.error("Error adding category:", error);
+        alert("An error occurred while adding the category");
+      }
+    }
+  };
 
-        try {
-          await axios.post('http://localhost:8080/eventscategory', formData);
-          alert('Event added successfully');
-          setFormData({ category: '' }); // Clear the form
-          setShowForm(false); // Hide the form
-          fetchAPI(); // Refresh the events list
-        } catch (error) {
-            if (error.response && error.response.status === 409) {
-                setErrorMessage('This category already exists'); // Set the duplicate entry error
-              } else {
-                console.error('Error adding category:', error);
-                alert('An error occurred while adding the category');
-              }
-        }
-      };
-    
-      //handling input change
-      const handleInputChange = (e) => {
-        setFormData({
-          ...formData,
-          [e.target.name]: e.target.value,
+  // Handle input change for form
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Handle category deletion
+  const handleDelete = async (categoryId) => {
+    if (window.confirm("Are you sure you want to delete this category?")) {
+      try {
+        await axios.delete(`http://localhost:8080/eventscategory/${categoryId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-      };
+        alert("Category deleted successfully");
+        fetchAPI();
+      } catch (error) {
+        console.error("Error deleting category:", error);
+        alert("Failed to delete category");
+      }
+    }
+  };
 
-      //handling delete
-      const handleDelete = async (categoryId) => {
-        if (window.confirm('Are you sure you want to delete this category?')) {
-          try {
-            await axios.delete(`http://localhost:8080/eventscategory/${categoryId}`);
-            alert('Category deleted successfully');
-            fetchAPI(); // Refresh the list after deletion
-          } catch (error) {
-            console.error('Error deleting category:', error);
-            alert('Failed to delete category');
-          }
-        }
-      };
+  // Handle editing a category
+  const handleEditCategory = (categoryId, currentName) => {
+    setEditingCategoryId(categoryId);
+    setUpdatedCategoryName(currentName);
+  };
 
-      const handleEditCategory = (categoryId, currentName) => {
-        setEditingCategoryId(categoryId); // Set the editing mode
-        setUpdatedCategoryName(currentName); // Prefill the current name in the input
-      };
-    
-      const handleUpdateCategory = async () => {
-        try {
-          await axios.put(`http://localhost:8080/eventscategory/${editingCategoryId}`, {
-            category: updatedCategoryName,
-          });
-          alert('Category updated successfully');
-          setEditingCategoryId(null); // Exit editing mode
-          setUpdatedCategoryName(''); // Clear input
-          fetchAPI();
-        } catch (error) {
-          console.error('Error updating category:', error);
-          alert('Failed to update category');
-        }
-      };
-    
-      
+  const handleUpdateCategory = async () => {
+    try {
+      await axios.put(
+        `http://localhost:8080/eventscategory/${editingCategoryId}`,
+        { category: updatedCategoryName },
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+      );
+      alert("Category updated successfully");
+      setEditingCategoryId(null);
+      setUpdatedCategoryName("");
+      fetchAPI();
+    } catch (error) {
+      console.error("Error updating category:", error);
+      alert("Failed to update category");
+    }
+  };
 
-return( 
-
-  <div className="bg-gray-100 p-6 min-h-screen">
-      <h1 className="text-2xl font-bold text-center mb-6 text-gray-700">Events Categories</h1>
+  return (
+    <div className="bg-gray-100 p-6 min-h-screen">
+      <h1 className="text-2xl font-bold text-center mb-6 text-gray-700">Past Events</h1>
       <div className="bg-white shadow-md rounded-lg max-w-3xl mx-auto">
         <div className="bg-maroon-700 p-4 rounded-t-lg flex justify-center">
-          <img src={nsaLogo} alt="ULM Logo" className="h-10 rounded-full" />
+          <img src={nsaLogo} alt="NSA Logo" className="h-10 rounded-full" />
         </div>
 
         <div className="p-4">
@@ -132,7 +132,7 @@ return(
                       <button
                         onClick={() => {
                           setEditingCategoryId(null);
-                          setUpdatedCategoryName('');
+                          setUpdatedCategoryName("");
                         }}
                         className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
                       >
@@ -145,20 +145,22 @@ return(
                     <Link to={`/event/${event.category_id}`} className="block w-1/2">
                       <span className="text-gray-700 font-medium">{event.category}</span>
                     </Link>
-                    <div className="flex space-x-2">
-                      <button
-                        className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600"
-                        onClick={() => handleEditCategory(event.category_id, event.category)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
-                        onClick={() => handleDelete(event.category_id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    {user && (user.role === "President" || user.role === "Board Member") && (
+                      <div className="flex space-x-2">
+                        <button
+                          className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600"
+                          onClick={() => handleEditCategory(event.category_id, event.category)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
+                          onClick={() => handleDelete(event.category_id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -168,12 +170,14 @@ return(
           )}
           <br />
 
-          <button
-            className="bg-blue-500 text-white py-1 px-3 mr-2 rounded hover:bg-blue-600"
-            onClick={() => setShowForm(!showForm)}
-          >
-            {showForm ? 'Cancel' : 'Add Category'}
-          </button>
+          {user && (user.role === "President" || user.role === "Board Member") && (
+            <button
+              className="bg-blue-500 text-white py-1 px-3 mr-2 rounded hover:bg-blue-600"
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? "Cancel" : "Add Category"}
+            </button>
+          )}
 
           {showForm && (
             <form onSubmit={handleFormSubmit} className="mt-4">
@@ -197,18 +201,13 @@ return(
               >
                 Submit
               </button>
-              {errorMessage && (
-                <p className="text-red-500 mt-2">{errorMessage}</p>
-              )}
+              {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
             </form>
           )}
         </div>
       </div>
     </div>
-
-
-
-)
+  );
 };
 
 export default Events;

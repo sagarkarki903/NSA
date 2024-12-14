@@ -16,7 +16,7 @@ const EventDetails = () => {
   const [ratingstar, setRatingStar] = useState(null);
   const[fetchedReview, setFetchedReview] = useState([]);
   
-
+  const user = JSON.parse(localStorage.getItem("user")); // Get the logged-in user's details
 
   const fetchAPI = async () => {
     try {
@@ -44,18 +44,35 @@ const EventDetails = () => {
   };
 
   const handleSave = async () => {
+    // Check if all required fields are filled
+    const { event_name, event_date, location, budget, event_documentation } = eventDetails;
+  
+    if (
+      
+      !event_name ||
+      !event_date ||
+      !location ||
+      !budget ||
+      !event_documentation
+    ) {
+      alert("Please fill out all fields before saving.");
+      return;
+    }
+  
+    console.log("Event details being sent:", eventDetails);
+  
     try {
       await axios.put(`http://localhost:8080/eventslist/${eventDetails.event_id}`, eventDetails);
-      setMessage('Event details updated successfully.');
+      setMessage("Event details updated successfully.");
       setIsEditing(false); // Exit edit mode
       setTimeout(() => {
-        setMessage(''); // Clear the message after 3 seconds
+        setMessage(""); // Clear the message after 3 seconds
       }, 3000);
     } catch (error) {
-      console.error('Error updating event:', error);
-      setMessage('Failed to update event details. Please try again.');
+      console.error("Error updating event:", error);
+      setMessage("Failed to update event details. Please try again.");
       setTimeout(() => {
-        setMessage(''); // Clear the message after 3 seconds
+        setMessage(""); // Clear the message after 3 seconds
       }, 3000);
     }
   };
@@ -75,32 +92,52 @@ const EventDetails = () => {
     setShowForm(false);
   }
 
-  const handlePostReview = async ()=> {
-    try{
+ // Add a Review
+ const handlePostReview = async () => {
+  const token = localStorage.getItem("token");
+  const user = JSON.parse(localStorage.getItem("user")); // Get the logged-in user's details
+
+  if (!token) {
+    alert("You must be logged in to post a review.");
+    return;
+  }
+
+  if (!ratingstar || !review) {
+    alert("Please provide a rating and a review.");
+    return;
+  }
+
+  try {
     const reviewData = {
       event_id: eventDetails.event_id,
-      review: review,
+      review,
       rating: ratingstar,
-      event_name: eventDetails.event_name
+      event_name: eventDetails.event_name,
+      user_name: user?.first_name || "Anonymous",
     };
-      //using optimistic update to display the reviews immediately after clicking post 
-      const tempReview = { ...reviewData};//creating a copy to prevent server state issues
-      setFetchedReview((prevReviews) => [...prevReviews, tempReview])
 
-    const response = await axios.post("http://localhost:8080/add-review", reviewData);
-    alert("Review Added Successfully");
+    // Optimistic update
+    setFetchedReview((prev) => [...prev, reviewData]);
+
+    await axios.post("http://localhost:8080/add-review", reviewData, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    alert("Review added successfully!");
     setShowForm(false);
-    setReview('');
+    setReview("");
     setRatingStar(null);
-  } catch(error){
-    console.log("Error adding review", error);
+  } catch (error) {
+    console.error("Error adding review:", error);
 
-    // Rollback: Remove the optimistically added review
-    setFetchedReview((prevReviews) => prevReviews.filter((r) => r !== tempReview));
+    // Rollback optimistic update
+    setFetchedReview((prev) =>
+      prev.filter((item) => item !== reviewData)
+    );
 
     alert("Failed to add review. Please try again.");
-  } 
   }
+};
 
   //This is for fetching reviews data
   const DisplayReviews = async ()=> {
@@ -163,7 +200,7 @@ const EventDetails = () => {
                 <strong>Location:</strong> {eventDetails.location || 'N/A'}
               </p>
               <p>
-                <strong>Total Budget:</strong> {eventDetails.budget || 'N/A'}
+                <strong>Total Budget: </strong>${eventDetails.budget || 'N/A'}
               </p>
               <p>
                 <strong>Links:</strong>
@@ -191,12 +228,14 @@ const EventDetails = () => {
                   {eventDetails.event_documentation || 'N/A'}
                 </div>
               </div>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 mt-4"
-              >
-                Edit
-              </button>
+              {user?.role === "President" && (
+    <button
+      onClick={() => setIsEditing(true)}
+      className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 mt-4"
+    >
+      Edit
+    </button>
+  )}
             </div>
           ) : (
             // Edit Mode
@@ -257,6 +296,7 @@ const EventDetails = () => {
                   onChange={handleInputChange}
                   className="w-full border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter total budget"
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -315,12 +355,16 @@ const EventDetails = () => {
       
       filteredReviews.map((review, index) => (
        <div key={index} className="bg-white p-4 rounded-md shadow">
-      <p className="font-semibold text-gray-800">{review.event_name}</p>
+      <p className="font-semibold text-gray-800">
+      {review.user_name || "Anonymous"}
+        </p>
       <Rating value={review.rating} readOnly style={{ maxWidth: 100 }} />
       <p className="text-gray-600 mt-2">{review.review}</p>
     </div>
       ))
     )}
+
+    {/* /add review form */}
     {showForm && (
       <div className="bg-white p-4 rounded-md shadow">
       <p className="font-semibold text-gray-800">Anonymous</p>
@@ -357,6 +401,8 @@ const EventDetails = () => {
     )}
 
         {/* Review Add Cancel Button Logic */}
+        
+        {user && (
         <div className="mt-4 space-x-4">
             <button
               onClick={handleAddReview}
@@ -367,7 +413,7 @@ const EventDetails = () => {
             
         
         </div>
-   
+)}
         
 
       {/* //////////////////// */}

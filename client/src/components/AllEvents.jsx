@@ -13,6 +13,7 @@ const AllEvents = () => {
   const [showForm, setShowForm] = useState(false);
   const [categoryName, setCategoryName] = useState(''); // State to store category name
 
+  const user = JSON.parse(localStorage.getItem("user")); // Get the logged-in user's details
 
 
   const fetchAPI = async () => {
@@ -53,7 +54,7 @@ const AllEvents = () => {
   
   useEffect(() => {
     fetchAPI();
-  });
+  }, [category_id]); // Only run when category_id changes
 
   useEffect(() => {
     if (allEvents.length > 0) {
@@ -83,50 +84,55 @@ const AllEvents = () => {
 
   return (
     <div className='bg-gray-100 p-6 min-h-screen'>
-      <h1 className='text-2xl font-bold text-center mb-6 text-gray-700'>
-        All {categoryName} Events
-      </h1>
-      <div className='bg-white shadow-md rounded-lg max-w-3xl mx-auto'>
-        <div className='bg-maroon-700 p-4 rounded-t-lg flex justify-center'>
-          <img src={nsaLogo} alt='ULM Logo' className='h-10 rounded-full' />
-        </div>
+  <h1 className='text-2xl font-bold text-center mb-6 text-gray-700'>
+    All {categoryName} Events
+  </h1>
+  <div className='bg-white shadow-md rounded-lg max-w-3xl mx-auto'>
+    <div className='bg-maroon-700 p-4 rounded-t-lg flex justify-center'>
+      <img src={nsaLogo} alt='ULM Logo' className='h-10 rounded-full' />
+    </div>
 
-        {/* Fetching All Events from events_list Here */}
-        <div className='p-4'>
-          {filteredEvents.length > 0 ? (
-            filteredEvents.map((event, index) => (
-              <div
-                key={index}
-                className='flex justify-between items-center p-3 border-b border-gray-200 hover:bg-gray-200 hover:shadow-md transition duration-200 ease-in-out'
+    {/* Fetching All Events from events_list Here */}
+    <div className='p-4'>
+      {filteredEvents.length > 0 ? (
+        filteredEvents.map((event, index) => (
+          <div
+            key={index}
+            className='flex justify-between items-center p-3 border-b border-gray-200 hover:bg-gray-200 hover:shadow-md transition duration-200 ease-in-out'
+          >
+            <Link to={`/event/${category_id}/${event.event_name}`}>
+              <span className='text-gray-700 font-medium'>{event.event_name}</span>
+            </Link>
+
+            {/* Only show the Delete button if the user is the President */}
+            {user?.role === 'President' && (
+              <button
+                className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
+                onClick={(e) => {
+                  handleDelete(event.event_id);
+                }}
               >
-                <Link to={`/event/${category_id}/${event.event_name}`}>
-                  <span className='text-gray-700 font-medium'>{event.event_name}</span>
-                </Link>
-                <button
-                            className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
-                      
-                            onClick={(e) => {
-                              handleDelete(event.event_id);
-                            }}
-                          >
-                          Delete
-                        </button>
-              </div>
-            ))
-          ) : (
-            <p className='text-center text-gray-500'>
-              No events available for category {categoryName}.
-              {filteredEvents.category}
-            </p>
-          )}
+                Delete
+              </button>
+            )}
+          </div>
+        ))
+      ) : (
+        <p className='text-center text-gray-500'>
+          No events available for category {categoryName}.
+        </p>
+      )}
 
-          <br />
+      <br />
 
-          {/* Add Event Form */}
+      {/* Only show the Add Event button if the user is the President */}
+      {user?.role === 'President' && (
+        <>
           <button
             className='bg-blue-500 text-white py-1 px-3 mr-2 rounded hover:bg-blue-600'
-            onClick={() => {setShowForm(!showForm);
-              setMessage(''); 
+            onClick={() => {
+              setShowForm(!showForm);
+              setMessage('');
             }}
           >
             {showForm ? 'Cancel' : 'Add Event'}
@@ -153,9 +159,11 @@ const AllEvents = () => {
               {message && <p className="mt-4 text-center text-red-500">{message}</p>}
             </>
           )}
-        </div>
-      </div>
+        </>
+      )}
     </div>
+  </div>
+</div>
   );
 };
 
