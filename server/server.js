@@ -107,6 +107,12 @@ app.post("/login", async (req, res) => {
   }
 });
 
+//base route
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "Welcome to the API. The server is running." });
+});
+
+
 // Register a new user
 app.post("/userlist", async (req, res) => {
   const { username, email, first_name, last_name, password, role, classification } = req.body;
@@ -222,7 +228,7 @@ app.get('/eventscategory/:category_id', async (req, res) => {
 app.get('/eventslist', (req, res) => {
   const q = "SELECT * FROM events_list";
 
-  db.query(q, (err, results) => {
+  pool.query(q, (err, results) => {
     if(err){
       console.log(err);
     }
@@ -235,7 +241,7 @@ app.post('/eventscategory', (req, res) => {
   const { category } = req.body;
   const query = 'INSERT INTO events_category (category) VALUES (?)';
   
-  db.query(query, [category], (err, result) => {
+  pool.query(query, [category], (err, result) => {
     if (err) {
       if (err.code === 'ER_DUP_ENTRY') {
         // Handle duplicate entry error
@@ -402,6 +408,54 @@ app.get("/fetch-reviews", async (req, res) => {
     res.status(500).json({ message: "Error fetching reviews" });
   }
 });
+
+
+
+//Calendar Events//
+
+app.post("/up-events", (req, res) => {
+  const{calendar_events, description, start_date, end_date} = req.body;
+
+  const q = "INSERT INTO upcoming_events (calendar_events, description, start_date, end_date) VALUES (?,?,?,?)";
+  pool.query(q, [calendar_events, description, start_date, end_date], (err, results) => {
+    if(err){
+      res.status(500).send("Failed to add event");
+      return;
+    }
+    res.status(200).send("Event addedd sucessfully");
+  });
+});
+
+app.get("/up-events", async (req, res) => {
+  const query = `
+    SELECT calendar_id, calendar_events AS title, description, start_date AS start, end_date AS end 
+    FROM upcoming_events`;
+  try {
+    const [results] = await pool.promise().query(query);
+    res.status(200).json(results);
+  } catch (err) {
+    console.error("Error fetching events:", err);
+    res.status(500).json({ message: "Failed to fetch events" });
+  }
+});
+
+
+app.delete("/up-events/:calendar_id", async (req, res) => {
+  const { calendar_id } = req.params; // Extract calendar_id
+  const query = "DELETE FROM upcoming_events WHERE calendar_id = ?";
+  try {
+    const [result] = await pool.promise().query(query, [calendar_id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Event not found." });
+    }
+    res.status(200).json({ message: "Event deleted successfully." });
+  } catch (err) {
+    console.error("Error deleting event:", err);
+    res.status(500).json({ message: "Failed to delete event." });
+  }
+});
+
+
 
 
 // Start the server

@@ -12,6 +12,7 @@ import AllEvents from './components/AllEvents';
 import EventDetails from './components/EventDetails';
 import Rough from './components/Rough';
 import InitialFetch from './components/InitialFetch';
+import CalendarPage from './components/CalendarPage';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -61,6 +62,7 @@ const App = () => {
             <Route path="/event/:category_id/:event_name" element={<EventDetails />} />
             <Route path="/rough" element={<Rough />} />
             <Route path="/users" element={<InitialFetch />} />
+            <Route path="/calendar" element={<CalendarPage />} />
           </Routes>
         </main>
         <Footer />
