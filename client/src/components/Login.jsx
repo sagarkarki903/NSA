@@ -7,7 +7,6 @@ import backgroundImage from "../assets/nsagroup.jpg";
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
@@ -120,18 +119,7 @@ const Login = ({ onLogin }) => {
               />
             </div>
 
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 text-[#852633] focus:ring-[#852633] border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-                Remember me
-              </label>
-            </div>
+           
 
             <button
               type="submit"
@@ -141,7 +129,7 @@ const Login = ({ onLogin }) => {
             </button>
 
             <div className="mt-4 text-center">
-              <Link to="/forgot-password" className="text-sm text-[#852633] hover:underline">
+              <Link to="/contact" className="text-sm text-[#852633] hover:underline">
                 Forgot Password
               </Link>
             </div>

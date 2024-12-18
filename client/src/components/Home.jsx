@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar"; // Assuming Navbar is in the same folder
 import { NavLink, useNavigate } from "react-router-dom";
+import backgroundImage from "../images/bghome1.jpg";
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -18,7 +19,14 @@ const Home = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800" >
+    <div className="min-h-screen bg-gray-50 text-gray-800 bg-cover bg-center bg-fixed" 
+        style={{
+              backgroundImage: `url(${backgroundImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+    >
      {/* Pass onLogout to Navbar */}
       <div className="container mx-auto px-4 py-10">
         {user ? (

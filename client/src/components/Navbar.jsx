@@ -54,7 +54,7 @@ const Navbar = ({ user, onLogout }) => {
           }`
         }
       >
-        Events
+        Past Events
       </NavLink>
       <NavLink
         to="/contact"
@@ -88,6 +88,7 @@ const Navbar = ({ user, onLogout }) => {
   const renderRightLinks = () => (
     <>
       {user ? (
+        <NavLink to="/">
         <div className="flex items-center space-x-4">
           <span className="text-black bg-slate-100 rounded-md px-2 py-1">Welcome, {user.first_name}!</span>
           <button
@@ -97,6 +98,7 @@ const Navbar = ({ user, onLogout }) => {
             Logout
           </button>
         </div>
+        </NavLink>
       ) : (
         <NavLink
           to="/login"

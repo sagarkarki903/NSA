@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 
+
 app.use(bodyParser.json());
 
 // Set up CORS to allow requests from the frontend
@@ -454,7 +455,6 @@ app.delete("/up-events/:calendar_id", async (req, res) => {
     res.status(500).json({ message: "Failed to delete event." });
   }
 });
-
 
 
 
