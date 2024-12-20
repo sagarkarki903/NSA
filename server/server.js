@@ -8,6 +8,8 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
+const fs = require("fs");
+
 
 
 app.use(bodyParser.json());
@@ -26,7 +28,6 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Create a connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
@@ -35,6 +36,20 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10, // Adjust based on your server's capacity
   queueLimit: 0,
+  ssl: {
+    ca: fs.readFileSync('./DigiCertGlobalRootCA.crt.pem'), // Correct path to the certificate
+    rejectUnauthorized: true
+  }
+});
+// Test the database connection when the server starts
+pool.getConnection((err, connection) => {
+  if (err) {
+    console.error("Error connecting to the database:", err.message);
+    process.exit(1);
+  } else {
+    console.log("Database connected successfully!");
+    connection.release();
+  }
 });
 
 // Middleware for JWT authentication
@@ -344,7 +359,7 @@ app.put('/eventslist/:id', async (req, res) => {
   if (!event_name || !event_date || !location || !budget) {
     return res.status(400).json({ message: "Missing required fields: event_name, event_date, location, or budget." });
   }
-
+  const formattedDate = new Date(event_date).toISOString().split('T')[0];
   const query = `
     UPDATE events_list
     SET event_name = ?, event_date = ?, location = ?, budget = ?, links = ?, event_documentation = ?, event_image = ?
@@ -353,7 +368,7 @@ app.put('/eventslist/:id', async (req, res) => {
   try {
     const [result] = await pool.promise().query(query, [
       event_name,
-      event_date,
+      formattedDate,
       location,
       budget,
       links,

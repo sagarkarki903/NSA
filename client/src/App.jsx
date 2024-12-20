@@ -25,15 +25,15 @@ const App = () => {
     }
   }, []);
 
-  // Periodically check the logged-in user
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const currentUser = localStorage.getItem('user');
-      console.log('Currently logged-in user:', currentUser ? JSON.parse(currentUser) : 'No user');
-    }, 1000); // Logs every second
+  // // Periodically check the logged-in user
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const currentUser = localStorage.getItem('user');
+  //     console.log('Currently logged-in user:', currentUser ? JSON.parse(currentUser) : 'No user');
+  //   }, 1000); // Logs every second
 
-    return () => clearInterval(interval); // Cleanup on component unmount
-  }, []);
+  //   return () => clearInterval(interval); // Cleanup on component unmount
+  // }, []);
 
   const handleLogin = (userData) => {
     setUser(userData);

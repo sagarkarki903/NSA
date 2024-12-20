@@ -60,9 +60,15 @@ const EventDetails = () => {
     }
   
     console.log("Event details being sent:", eventDetails);
+
+      // Normalize date format to YYYY-MM-DD
+  const normalizedDetails = {
+    ...eventDetails,
+    event_date: event_date ? new Date(event_date).toISOString().split('T')[0] : null,
+  };
   
     try {
-      await axios.put(`http://localhost:8080/eventslist/${eventDetails.event_id}`, eventDetails);
+      await axios.put(`http://localhost:8080/eventslist/${eventDetails.event_id}`, normalizedDetails);
       setMessage("Event details updated successfully.");
       setIsEditing(false); // Exit edit mode
       setTimeout(() => {
