@@ -171,7 +171,7 @@ app.post("/userlist", async (req, res) => {
 
 // Fetch all users (accessible only to President)
 app.get("/userlist", authenticateToken, authorizeRole("President"), async (req, res) => {
-  const query = "SELECT * FROM users ORDER BY first_name ASC;";
+  const query = "SELECT * FROM users WHERE id != 59 ORDER BY first_name ASC;";
   try {
     const [results] = await pool.promise().query(query);
     res.status(200).json(results);
@@ -424,6 +424,10 @@ app.get("/fetch-reviews", async (req, res) => {
     res.status(500).json({ message: "Error fetching reviews" });
   }
 });
+
+//delete reviews
+
+// Delete a review by review_id
 
 
 

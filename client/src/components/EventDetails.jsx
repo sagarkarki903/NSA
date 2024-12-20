@@ -119,7 +119,7 @@ const EventDetails = () => {
       review,
       rating: ratingstar,
       event_name: eventDetails.event_name,
-      user_name: user?.first_name || "Anonymous",
+      user_name: `${user?.first_name || "Anonymous"} ${user?.last_name || ""}`.trim(),
     };
 
     // Optimistic update
@@ -167,6 +167,12 @@ const EventDetails = () => {
           eventDetails.event_id &&
           review.event_id === eventDetails.event_id
       );
+
+
+const handleDeleteReview = async () => {
+
+};
+
 
   return (
     <div className="bg-gray-100 p-6 min-h-screen">
@@ -349,11 +355,11 @@ const EventDetails = () => {
      
 
     <div
-  className="review-section w-full border-t border-gray-300 bg-gray-100 shadow-md p-4 mt-6
+      className="review-section w-full border-t border-gray-300 bg-gray-100 shadow-md p-4 mt-6
              lg:w-full lg:border-t lg:mt-4"
->
-  <h2 className="text-lg font-bold text-gray-700">Reviews</h2>
-  <div className="space-y-4 mt-4">
+    >
+      <h2 className="text-lg font-bold text-gray-700">Reviews</h2>
+      <div className="space-y-4 mt-4">
    
     {filteredReviews.length === 0 ? (
       <p>No reviews yet.</p>
@@ -366,6 +372,14 @@ const EventDetails = () => {
         </p>
       <Rating value={review.rating} readOnly style={{ maxWidth: 100 }} />
       <p className="text-gray-600 mt-2">{review.review}</p>
+
+                  <button
+                    onClick={() => handleDeleteReview(review.review_id)}
+                    className="bg-red-500 text-white px-2 py-1 rounded-md mt-2 hover:bg-red-600"
+                  >
+                    Delete
+                  </button>
+               
     </div>
       ))
     )}

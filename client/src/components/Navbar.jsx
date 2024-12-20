@@ -127,8 +127,9 @@ const Navbar = ({ user, onLogout }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left-aligned Links */}
+            
             <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-bold">ULM</h1>
+            <NavLink to="/"><h1 className="text-xl font-bold cursor-pointer">ULM</h1></NavLink>  
               <div className="hidden md:flex space-x-4">{renderLeftLinks()}</div>
             </div>
 
