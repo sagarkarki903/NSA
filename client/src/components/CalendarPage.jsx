@@ -17,6 +17,7 @@ const localizer = dateFnsLocalizer({
 });
 
 const CalendarPage = () => {
+  const user = JSON.parse(localStorage.getItem("user")); // Get the logged-in user's details
   const [showForm, setShowForm] = useState(false);
   const [showEventDetails, setShowEventDetails] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -50,8 +51,13 @@ const CalendarPage = () => {
       alert('Failed to fetch events from the server.');
     }
   };
-
+// Filter only upcoming events
+const upcomingEvents = events.filter(event => new Date(event.start) > new Date());
   const handleSelectSlot = (slotInfo) => {
+    if (user?.role !== 'President') {
+      //alert('Only Presidents can add events.');
+      return;
+    }
     setFormData({
       title: '',
       description: '',
@@ -63,7 +69,10 @@ const CalendarPage = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
+    if (user?.role !== 'President') {
+      //alert('Only Presidents can add events.');
+      return;
+    }
     const newEvent = {
       calendar_events: formData.title,
       description: formData.description,
@@ -105,6 +114,10 @@ const CalendarPage = () => {
       alert('Please select an event to delete.');
       return;
     }
+    if (user?.role !== 'President') {
+      alert('Only Presidents can delete events.');
+      return;
+    }
 
     const confirmed = window.confirm(`Are you sure you want to delete "${selectedEvent.title}"?`);
     if (confirmed) {
@@ -128,54 +141,104 @@ const CalendarPage = () => {
 
   return (
     <>
-      <h1 className="text-2xl font-bold mb-4 text-center text-gray-700 mt-6">
-        Upcoming Events
-      </h1>
-      <div className="h-[580px] mt-6 mx-4 sm:mx-10 md:mx-20 lg:mx-40 xl:mx-60">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          selectable
-          onSelectSlot={handleSelectSlot}
-          onSelectEvent={handleSelectEvent}
-          style={{ height: '100%' }}
-          eventPropGetter={(event) => ({
-            style: {
-              backgroundColor:
-                deleteMode && selectedEvent?.calendar_id === event.calendar_id ? 'red' : '#3174ad',
-              color: 'white',
-            },
-          })}
-        />
-      </div>
+    <div className="relative z-10 text-center mt-4">
+    {!deleteMode ? (
+  user && user.role === 'President' && (
+    <button
+      onClick={() => setDeleteMode(true)}
+      className="px-4 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600"
+    >
+      Delete Event
+    </button>
+  )
+) : (
+  <>
+    <button
+      onClick={handleDeleteEvent}
+      className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 mr-2"
+    >
+      Confirm Delete
+    </button>
+    <button
+      onClick={() => setDeleteMode(false)}
+      className="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600"
+    >
+      Cancel
+    </button>
+  </>
+)}
+  </div>
+      <div className="flex flex-col md:flex-row h-screen">
+        {/* Calendar Section */}
+        <div className="w-full md:w-2/3  h-[75vh] p-4 pb-16 overflow-hidden" >
+          <h1 className="text-2xl font-bold mb-4 text-center text-gray-700 mt-6">
+            Calendar
+          </h1>
+          <Calendar
+  localizer={localizer}
+  events={events}
+  startAccessor="start"
+  endAccessor="end"
+  selectable
+  onSelectSlot={handleSelectSlot}
+  onSelectEvent={handleSelectEvent}
+  style={{ height: '100%' }}
+  eventPropGetter={(event) => ({
+    style: {
+      backgroundColor:
+        deleteMode && selectedEvent?.calendar_id === event.calendar_id
+          ? 'red'
+          : '#3174ad', // Event background color
+      color: 'white',
+    },
+  })}
+  dayPropGetter={(date) => {
+    const hasEvent = events.some(
+      (event) =>
+        date.toISOString().slice(0, 10) ===
+        new Date(event.start).toISOString().slice(0, 10)
+    );
+    return {
+      style: hasEvent
+        ? {
+            backgroundColor: '#E8F5E9', // Light green for event days
+            color: 'transparent', // Hide the day number
+          }
+        : {},
+    };
+  }}
+/>
+{/* Delete Mode Buttons */}
 
-      {/* Delete Mode Buttons */}
-      <div className="text-center mt-4">
-        {!deleteMode ? (
-          <button
-            onClick={() => setDeleteMode(true)}
-            className="px-4 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600"
-          >
-            Delete Event
-          </button>
-        ) : (
-          <>
-            <button
-              onClick={handleDeleteEvent}
-              className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 mr-2"
-            >
-              Confirm Delete
-            </button>
-            <button
-              onClick={() => setDeleteMode(false)}
-              className="px-4 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600"
-            >
-              Cancel
-            </button>
-          </>
-        )}
+        </div>
+
+        {/* Upcoming Events Section */}
+        <div className="w-full md:w-1/3 h-full p-4 bg-gray-100 overflow-y-auto">
+          <h2 className="text-xl font-bold mb-4 text-center text-gray-700">
+            Upcoming Events
+          </h2>
+          <ul>
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event, index) => (
+                <li
+                  key={index}
+                  className="border-b border-gray-300 py-2 px-4 hover:bg-gray-200"
+                >
+                  <h3 className="text-lg font-semibold">{event.calendar_events || event.title}</h3>
+                  <p>{event.description}</p>
+                  <p>
+                    <strong>Start:</strong> {new Date(event.start).toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>End:</strong> {new Date(event.end).toLocaleString()}
+                  </p>
+                </li>
+              ))
+            ) : (
+              <p className="text-center text-gray-500">No upcoming events.</p>
+            )}
+          </ul>
+        </div>
       </div>
 
       {/* Add Event Form */}
@@ -184,6 +247,7 @@ const CalendarPage = () => {
           <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
             <h2 className="text-xl font-bold mb-4">Add Event</h2>
             <form onSubmit={handleFormSubmit}>
+              {/* Form Fields */}
               <label className="block mb-2 text-gray-700">Event Title</label>
               <input
                 type="text"
@@ -219,6 +283,7 @@ const CalendarPage = () => {
                 className="w-full border p-2 mb-4"
                 required
               />
+              {/* Buttons */}
               <div className="flex justify-end">
                 <button type="button" onClick={() => setShowForm(false)} className="mr-2 px-4 py-2 bg-gray-500 text-white rounded">
                   Cancel
@@ -232,38 +297,39 @@ const CalendarPage = () => {
         </div>
       )}
 
-      {/* Event Details Modal */}
-{showEventDetails && selectedEvent && (
-  <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] max-w-md">
-      <h2 className="text-xl font-bold mb-4">Event Details</h2>
-      <p>
-        <strong>Title:</strong> {selectedEvent.title}
-      </p>
-      <p>
-        <strong>Description:</strong> {selectedEvent.description}
-      </p>
-      <p>
-        <strong>Start:</strong> {new Date(selectedEvent.start).toLocaleString()}
-      </p>
-      <p>
-        <strong>End:</strong> {new Date(selectedEvent.end).toLocaleString()}
-      </p>
-      <div className="flex justify-end mt-4">
-        <button
-          type="button"
-          onClick={() => setShowEventDetails(false)}
-          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      
 
+      {/* Event Details Modal */}
+      {showEventDetails && selectedEvent && (
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-[90%] md:w-2/3">
+            <h2 className="text-xl font-bold mb-4">Event Details</h2>
+            <p>
+              <strong>Title:</strong> {selectedEvent.title}
+            </p>
+            <p>
+              <strong>Description:</strong> {selectedEvent.description}
+            </p>
+            <p>
+              <strong>Start:</strong> {new Date(selectedEvent.start).toLocaleString()}
+            </p>
+            <p>
+              <strong>End:</strong> {new Date(selectedEvent.end).toLocaleString()}
+            </p>
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                onClick={() => setShowEventDetails(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
-};
+ };
 
 export default CalendarPage;
