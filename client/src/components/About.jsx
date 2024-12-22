@@ -1,13 +1,8 @@
-import Spline from '@splinetool/react-spline';
+
 
 const About = () => {
     return (
         <div className="relative min-h-screen bg-gray-50 text-gray-800">
-            {/* Spline Background */}
-            <div className="absolute inset-0">
-            <Spline scene="https://prod.spline.design/5NcaizS4A99XsCtL/scene.splinecode" />
-              <div className='bg-[#D5D4E6] absolute w-36  h-10 bottom-5 right-4'>NSA@2025</div>
-            </div>
 
             {/* Content */}
             <div className="relative container mx-auto px-4 py-10">
