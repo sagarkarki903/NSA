@@ -119,7 +119,7 @@ const EventDetails = () => {
       review,
       rating: ratingstar,
       event_name: eventDetails.event_name,
-      user_name: user?.first_name || "Anonymous",
+      user_name : `${user?.first_name || ""} ${user?.last_name || ""}`.trim()
     };
 
     // Optimistic update

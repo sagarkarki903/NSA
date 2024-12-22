@@ -37,7 +37,8 @@ const pool = mysql.createPool({
   connectionLimit: 10, // Adjust based on your server's capacity
   queueLimit: 0,
   ssl: {
-    ca: fs.readFileSync('./DigiCertGlobalRootCA.crt.pem'), // Correct path to the certificate
+    //ca: fs.readFileSync('./ca.pem'), // Correct path to the certificate
+    ca: fs.readFileSync('./DigiCertGlobalRootCA.crt.pem'),
     rejectUnauthorized: true
   }
 });
@@ -171,7 +172,7 @@ app.post("/userlist", async (req, res) => {
 
 // Fetch all users (accessible only to President)
 app.get("/userlist", authenticateToken, authorizeRole("President"), async (req, res) => {
-  const query = "SELECT * FROM users ORDER BY first_name ASC;";
+  const query = "SELECT * FROM users ORDER BY first_name ASC";
   try {
     const [results] = await pool.promise().query(query);
     res.status(200).json(results);
@@ -329,24 +330,33 @@ app.delete("/eventslist/:event_id", async (req, res) => {
   }
 });
 
-app.put('/eventscategory/:id', (req, res) => {
+app.put('/eventscategory/:id', async (req, res) => {
   const categoryId = req.params.id; // Extract the id from the route
   const { category } = req.body; // Extract only the category from the request body
 
+  // Validate required fields
+  if (!category) {
+    return res.status(400).json({ message: "Missing required field: category." });
+  }
+
   const query = 'UPDATE events_category SET category = ? WHERE category_id = ?';
 
-  db.query(query, [category, categoryId], (err, result) => {
-    if (err) {
-      console.error("Error updating category:", err);
-      res.status(500).json({ message: "Failed to update category" });
-    } else if (result.affectedRows === 0) {
-      res.status(404).json({ message: "Category not found" });
-    } else {
-      res.status(200).json({ message: "Category updated successfully" });
-    }
-  });
-});
+  try {
+    // Execute the query using the pool
+    const [result] = await pool.promise().query(query, [category, categoryId]);
 
+    if (result.affectedRows === 0) {
+      // If no rows are affected, the category does not exist
+      return res.status(404).json({ message: "Category not found." });
+    }
+
+    // If the update is successful
+    res.status(200).json({ message: "Category updated successfully." });
+  } catch (err) {
+    console.error("Error updating category:", err); // Log the error for debugging
+    res.status(500).json({ message: "Failed to update category." });
+  }
+});
 
 
 //For editing the event details in Event Detail Component
@@ -477,3 +487,4 @@ app.delete("/up-events/:calendar_id", async (req, res) => {
 app.listen(8080, () => {
   console.log("Server started on port 8080");
 });
+
