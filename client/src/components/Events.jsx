@@ -3,9 +3,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-
-
-const Events = ({ user }) => {
+const Events = () => {
   const [events, setEvents] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -14,6 +12,7 @@ const Events = ({ user }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [editingCategoryId, setEditingCategoryId] = useState(null);
   const [updatedCategoryName, setUpdatedCategoryName] = useState("");
+  const user = JSON.parse(localStorage.getItem("user"));
 
   const fetchAPI = async () => {
     try {
@@ -23,7 +22,6 @@ const Events = ({ user }) => {
       console.error("Error fetching data", error);
     }
   };
-  
 
   useEffect(() => {
     fetchAPI();
@@ -86,8 +84,7 @@ const Events = ({ user }) => {
     try {
       await axios.put(
         `http://localhost:8080/eventscategory/${editingCategoryId}`,
-        { category: updatedCategoryName },
-        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
+        { category: updatedCategoryName }
       );
       alert("Category updated successfully");
       setEditingCategoryId(null);
@@ -101,7 +98,9 @@ const Events = ({ user }) => {
 
   return (
     <div className="bg-gray-100 p-6 min-h-screen">
-      <h1 className="text-2xl font-bold text-center mb-6 text-gray-700">Past Events</h1>
+      <h1 className="text-2xl font-bold text-center mb-6 text-gray-700">
+        Past Events
+      </h1>
       <div className="bg-white shadow-md rounded-lg max-w-3xl mx-auto">
         <div className="bg-maroon-700 p-4 rounded-t-lg flex justify-center">
           <img src={nsaLogo} alt="NSA Logo" className="h-10 rounded-full" />
@@ -142,25 +141,37 @@ const Events = ({ user }) => {
                   </>
                 ) : (
                   <>
-                    <Link to={`/event/${event.category_id}`} className="block w-1/2">
-                      <span className="text-gray-700 font-medium">{event.category}</span>
+                    <Link
+                      to={`/event/${event.category_id}`}
+                      className="block w-1/2"
+                    >
+                      <span className="text-gray-700 font-medium">
+                        {event.category}
+                      </span>
                     </Link>
-                    {user && (user.role === "President" || user.role === "Board Member") && (
-                      <div className="flex space-x-2">
+                    <div className="flex space-x-2">
+                      {user?.role === "President" && (
                         <button
                           className="bg-yellow-500 text-white py-1 px-3 rounded hover:bg-yellow-600"
-                          onClick={() => handleEditCategory(event.category_id, event.category)}
+                          onClick={() =>
+                            handleEditCategory(
+                              event.category_id,
+                              event.category
+                            )
+                          }
                         >
                           Edit
                         </button>
+                      )}
+                      {user?.role === "President" && (
                         <button
                           className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600"
                           onClick={() => handleDelete(event.category_id)}
                         >
                           Delete
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </>
                 )}
               </div>
@@ -170,7 +181,7 @@ const Events = ({ user }) => {
           )}
           <br />
 
-          {user && (user.role === "President" || user.role === "Board Member") && (
+          {user?.role === "President" && (
             <button
               className="bg-blue-500 text-white py-1 px-3 mr-2 rounded hover:bg-blue-600"
               onClick={() => setShowForm(!showForm)}
@@ -178,7 +189,6 @@ const Events = ({ user }) => {
               {showForm ? "Cancel" : "Add Category"}
             </button>
           )}
-
           {showForm && (
             <form onSubmit={handleFormSubmit} className="mt-4">
               <div className="mb-3">
@@ -201,7 +211,9 @@ const Events = ({ user }) => {
               >
                 Submit
               </button>
-              {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
+              {errorMessage && (
+                <p className="text-red-500 mt-2">{errorMessage}</p>
+              )}
             </form>
           )}
         </div>
