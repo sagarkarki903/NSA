@@ -1,3 +1,4 @@
+
 require("dotenv").config(); // Load environment variables
 
 const express = require("express");
@@ -37,9 +38,9 @@ const pool = mysql.createPool({
   connectionLimit: 10, // Adjust based on your server's capacity
   queueLimit: 0,
   ssl: {
-    //ca: fs.readFileSync('./ca.pem'), // Correct path to the certificate
-    ca: fs.readFileSync('./DigiCertGlobalRootCA.crt.pem'),
-    rejectUnauthorized: true
+   
+    ca: process.env.SSL_CA_PATH ? fs.readFileSync(process.env.SSL_CA_PATH) : undefined,
+    rejectUnauthorized: process.env.SSL_REJECT_UNAUTHORIZED === "true",
   }
 });
 // Test the database connection when the server starts
@@ -87,7 +88,7 @@ const handleError = (res, status, message) => {
 // Login route with JWT
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  const query = "SELECT * FROM users WHERE email = ?";
+  const query = "SELECT * FROM users WHERE email = ? AND verified = 1";
   try {
     const [results] = await pool.promise().query(query, [email]);
     if (results.length === 0) {
@@ -129,8 +130,7 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "Welcome to the API. The server is running." });
 });
 
-
-// Register a new user
+// Register a new user and send OTP
 app.post("/userlist", async (req, res) => {
   const { username, email, first_name, last_name, password, role, classification } = req.body;
 
@@ -146,11 +146,15 @@ app.post("/userlist", async (req, res) => {
   }
 
   try {
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
+
     // Hash the password before saving to the database
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Save the user to the database with OTP and `verified` as false
     const query =
-      "INSERT INTO users (username, email, first_name, last_name, password, role, classification) VALUES (?, ?, ?, ?, ?, ?, ?)";
+      "INSERT INTO users (username, email, first_name, last_name, password, role, classification, verified, otp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const values = [
       username,
       email,
@@ -159,16 +163,66 @@ app.post("/userlist", async (req, res) => {
       hashedPassword,
       role || "Member", // Default role to "Member"
       classification || "Other", // Default classification to "Other"
+      false, // Set verified to false
+      otp, // Save OTP
     ];
-
     await pool.promise().query(query, values);
-    res.status(201).json({ message: "User registered successfully!" });
+
+    // Send the OTP to the user's email
+    const nodemailer = require("nodemailer");
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER, // Your email address
+        pass: process.env.EMAIL_PASS, // Your email password
+      },
+    });
+
+    await transporter.sendMail({
+      from: '"NSA Events" <' + process.env.EMAIL_USER + '>',
+      to: email,
+      subject: "Your OTP Code",
+      text: `Your OTP is: ${otp}`,
+      html: `<p>Your OTP is: <b>${otp}</b></p>`,
+    });
+
+    res.status(201).json({ message: "Registration successful! OTP has been sent to your email address." });
   } catch (err) {
     console.error("Error registering user:", err);
     handleError(res, 500, "Error registering user");
   }
 });
 
+// Verify OTP
+app.post("/verify-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  // Validate input
+  if (!email || !otp) {
+    return res.status(400).json({ message: "Email and OTP are required." });
+  }
+
+  try {
+    // Check if the user exists and the OTP matches
+    const query = "SELECT * FROM users WHERE email = ? AND otp = ?";
+    const [results] = await pool.promise().query(query, [email, otp]);
+
+    if (results.length === 0) {
+      return res.status(400).json({ message: "Invalid email or OTP." });
+    }
+
+    // Update the user's verified status to true and clear the OTP
+    const updateQuery = "UPDATE users SET verified = ?, otp = NULL WHERE email = ?";
+    await pool.promise().query(updateQuery, [true, email]);
+
+    res.status(200).json({ message: "Account verified successfully!" });
+  } catch (err) {
+    console.error("Error verifying OTP:", err);
+    handleError(res, 500, "Error verifying OTP");
+  }
+});
 
 // Fetch all users (accessible only to President)
 app.get("/userlist", authenticateToken, authorizeRole("President"), async (req, res) => {
@@ -487,4 +541,3 @@ app.delete("/up-events/:calendar_id", async (req, res) => {
 app.listen(8080, () => {
   console.log("Server started on port 8080");
 });
-
