@@ -12,12 +12,14 @@
   "dependencies": {
     "@smastrom/react-rating": "^1.5.0",
     "@splinetool/react-spline": "^4.0.0",
+    "@splinetool/runtime": "^1.9.54",
     "axios": "^1.7.7",
     "react": "^18.3.1",
     "react-big-calendar": "^1.17.0",
     "react-dom": "^18.3.1",
     "react-quill": "^2.0.0",
-    "react-router-dom": "^6.27.0"
+    "react-router-dom": "^6.27.0",
+    "spline": "^0.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
