@@ -60,6 +60,7 @@ const InitialFetch = () => {
           Authorization: `Bearer ${token}`,
         },
       });
+      alert('User deleted successfully!');
       setUsers(users.filter((user) => user.id !== userId)); // Remove from state
     } catch (err) {
       console.error("Error deleting user:", err);
