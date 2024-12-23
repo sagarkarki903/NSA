@@ -20,7 +20,7 @@ const EventDetails = () => {
 
   const fetchAPI = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/eventslist/${category_id}`);
+      const response = await axios.get(`https://nsa-events.onrender.com/eventslist/${category_id}`);
       const event = response.data.find(
         (event) =>
           event.category_id === Number(category_id) && event.event_name === event_name
@@ -68,7 +68,7 @@ const EventDetails = () => {
   };
   
     try {
-      await axios.put(`http://localhost:8080/eventslist/${eventDetails.event_id}`, normalizedDetails);
+      await axios.put(`https://nsa-events.onrender.com/eventslist/${eventDetails.event_id}`, normalizedDetails);
       setMessage("Event details updated successfully.");
       setIsEditing(false); // Exit edit mode
       setTimeout(() => {
@@ -125,7 +125,7 @@ const EventDetails = () => {
     // Optimistic update
     setFetchedReview((prev) => [...prev, reviewData]);
 
-    await axios.post("http://localhost:8080/add-review", reviewData, {
+    await axios.post("https://nsa-events.onrender.com/add-review", reviewData, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -148,7 +148,7 @@ const EventDetails = () => {
   //This is for fetching reviews data
   const DisplayReviews = async ()=> {
         try {
-          const response = await axios.get('http://localhost:8080/fetch-reviews');
+          const response = await axios.get('https://nsa-events.onrender.com/fetch-reviews');
           setFetchedReview(response.data); // Store fetched data in state
         } catch (error) {
           console.error('Error fetching data:', error);

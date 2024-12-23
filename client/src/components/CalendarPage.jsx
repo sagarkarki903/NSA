@@ -37,7 +37,7 @@ const CalendarPage = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/up-events');
+      const response = await axios.get('https://nsa-events.onrender.com/up-events');
       if (response.status === 200) {
         const fetchedEvents = response.data.map(event => ({
           ...event,
@@ -81,7 +81,7 @@ const upcomingEvents = events.filter(event => new Date(event.start) > new Date()
     };
 
     try {
-      const response = await axios.post('http://localhost:8080/up-events', newEvent);
+      const response = await axios.post('https://nsa-events.onrender.com/up-events', newEvent);
       if (response.status === 200) {
         fetchEvents();
         setShowForm(false);
@@ -122,7 +122,7 @@ const upcomingEvents = events.filter(event => new Date(event.start) > new Date()
     const confirmed = window.confirm(`Are you sure you want to delete "${selectedEvent.title}"?`);
     if (confirmed) {
       try {
-        await axios.delete(`http://localhost:8080/up-events/${selectedEvent.calendar_id}`);
+        await axios.delete(`https://nsa-events.onrender.com/up-events/${selectedEvent.calendar_id}`);
         alert('Event deleted successfully!');
         fetchEvents();
         setSelectedEvent(null);

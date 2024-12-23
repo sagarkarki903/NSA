@@ -18,9 +18,9 @@ const AllEvents = () => {
 
   const fetchAPI = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/eventslist/${category_id}`);
+      const response = await axios.get(`https://nsa-events.onrender.com/eventslist/${category_id}`);
       setFilteredEvents(response.data); // Directly set filtered events
-      const categoryResponse = await axios.get(`http://localhost:8080/eventscategory/${category_id}`);
+      const categoryResponse = await axios.get(`https://nsa-events.onrender.com/eventscategory/${category_id}`);
       setCategoryName(categoryResponse.data.category);
     } catch (error) {
       console.error('Error fetching data', error);
@@ -30,7 +30,7 @@ const AllEvents = () => {
   const handleAddEvent = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:8080/eventslist', {
+      const response = await axios.post('https://nsa-events.onrender.com/eventslist', {
         category_id: category_id, // Extracted from URL
         event_name: newEventName,
       });
@@ -70,7 +70,7 @@ const AllEvents = () => {
   const handleDelete = async (eventId) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
-        await axios.delete(`http://localhost:8080/eventslist/${eventId}`);
+        await axios.delete(`https://nsa-events.onrender.com/eventslist/${eventId}`);
         alert('Event deleted successfully');
         fetchAPI(); // Refresh the list after deletion
       } catch (error) {

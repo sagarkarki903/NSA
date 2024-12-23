@@ -17,7 +17,7 @@ const Login = ({ onLogin }) => {
 
     try {
       // Send login request to the backend
-      const response = await axios.post("http://localhost:8080/login", { email, password });
+      const response = await axios.post("https://nsa-events.onrender.com/login", { email, password });
 
       if (response.status === 200) {
         console.log("Login successful: ");

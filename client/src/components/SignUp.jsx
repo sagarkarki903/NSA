@@ -39,7 +39,7 @@ const SignUp = () => {
     setError('');
     setMessage('');
     try {
-      const response = await axios.post('http://localhost:8080/userlist', formData);
+      const response = await axios.post('https://nsa-events.onrender.com/userlist', formData);
       setMessage(response.data.message || 'OTP sent to your email!');
       setIsOtpSent(true); // Switch to OTP verification step
     } catch (error) {
@@ -54,7 +54,7 @@ const SignUp = () => {
     setError('');
     setMessage('');
     try {
-      const response = await axios.post('http://localhost:8080/verify-otp', {
+      const response = await axios.post('https://nsa-events.onrender.com/verify-otp', {
         email: formData.email,
         otp: otp,
       });

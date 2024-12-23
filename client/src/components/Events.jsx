@@ -16,7 +16,7 @@ const Events = () => {
 
   const fetchAPI = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/eventscategory");
+      const response = await axios.get("https://nsa-events.onrender.com/eventscategory");
       setEvents(response.data);
     } catch (error) {
       console.error("Error fetching data", error);
@@ -33,7 +33,7 @@ const Events = () => {
     setErrorMessage("");
 
     try {
-      await axios.post("http://localhost:8080/eventscategory", formData, {
+      await axios.post("https://nsa-events.onrender.com/eventscategory", formData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       alert("Category added successfully");
@@ -62,7 +62,7 @@ const Events = () => {
   const handleDelete = async (categoryId) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
-        await axios.delete(`http://localhost:8080/eventscategory/${categoryId}`, {
+        await axios.delete(`https://nsa-events.onrender.com/eventscategory/${categoryId}`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         alert("Category deleted successfully");
@@ -83,7 +83,7 @@ const Events = () => {
   const handleUpdateCategory = async () => {
     try {
       await axios.put(
-        `http://localhost:8080/eventscategory/${editingCategoryId}`,
+        `https://nsa-events.onrender.com/eventscategory/${editingCategoryId}`,
         { category: updatedCategoryName }
       );
       alert("Category updated successfully");

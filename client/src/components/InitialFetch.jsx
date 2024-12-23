@@ -25,7 +25,7 @@ const InitialFetch = () => {
         throw new Error("No token found. Please log in.");
       }
 
-      const response = await axios.get("http://localhost:8080/userlist", {
+      const response = await axios.get("https://nsa-events.onrender.com/userlist", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -53,7 +53,7 @@ const InitialFetch = () => {
   const handleDelete = async (userId) => {
     try {
       const token = localStorage.getItem("token"); // Retrieve token
-      await axios.delete(`http://localhost:8080/users/${userId}`, {
+      await axios.delete(`https://nsa-events.onrender.com/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -91,7 +91,7 @@ const InitialFetch = () => {
   const handleSave = async (userId) => {
     try {
       const token = localStorage.getItem("token"); // Retrieve token
-      await axios.put(`http://localhost:8080/users/${userId}`, formData, {
+      await axios.put(`https://nsa-events.onrender.com/users/${userId}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
