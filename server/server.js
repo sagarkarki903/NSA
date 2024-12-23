@@ -175,11 +175,9 @@ app.post("/userlist", async (req, res) => {
       port: 587,
       secure: false,
       auth: {
-        // user: process.env.EMAIL_USER, // Your email address
-        // pass: process.env.EMAIL_PASS, // Your email password
-        user: "rajan.sa9841@gmail.com",
-         pass: "rfzo ebbu mxwf fdlp",
-      },
+        user: process.env.EMAIL_USER, // Your email address
+        pass: process.env.EMAIL_PASS, // Your email password
+              },
     });
 
     await transporter.sendMail({
