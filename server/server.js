@@ -14,20 +14,9 @@ const fs = require("fs");
 
 
 app.use(bodyParser.json());
-const path = require("path");
+ 
 
-// Serve static files (frontend build)
-app.use(express.static(path.join(__dirname, "../client/build"))); // Adjust path to your frontend build directory
-
-// Catch-all route for SPA
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/build", "index.html"));
-});
-// Set up CORS to allow requests from the frontend
-const corsOptions = {
-  origin: ["https://nsaevents.vercel.app/"], // Frontend URL
-};
-// Or if you need to support multiple origins:
+// if you need to support multiple origins:
 const allowedOrigins = ['http://localhost:3000', 'https://nsaevents.vercel.app'];
 app.use(cors({
   origin: (origin, callback) => {
