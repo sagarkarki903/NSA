@@ -51,7 +51,7 @@ const InitialFetch = () => {
 
   // Handle delete user
   const handleDelete = async (userId) => {
-    const confirmedUserDel = window.confirm(`Are you sure you want to delete "${user.username}"?`);
+    const confirmedUserDel = window.confirm(`Are you sure you want to delete the user"?`);
     if(confirmedUserDel){
     try {
       const token = localStorage.getItem("token"); // Retrieve token
