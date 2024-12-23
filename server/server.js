@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 
 // Set up CORS to allow requests from the frontend
 const corsOptions = {
-  origin: ["http://localhost:5173"], // Frontend URL
+  origin: ["https://nsaevents.vercel.app/"], // Frontend URL
 };
 app.use(cors(corsOptions));
 
