@@ -32,7 +32,6 @@ app.use(cors({
   },
   credentials: true,
 }));
-app.use(cors(corsOptions));
 
 // Set up rate limiting to prevent abuse
 const limiter = rateLimit({
