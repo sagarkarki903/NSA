@@ -95,7 +95,7 @@ const Navbar = ({ user, onLogout }) => {
   const renderRightLinks = () => (
     <>
       {user ? (
-        <NavLink to="/">
+        <NavLink to="/" onClick={() => setIsOpen(!isOpen)}>
         <div className="flex items-center space-x-4">
           <span className="text-black bg-slate-100 rounded-md px-2 py-1">Welcome, {user.first_name}!</span>
           <button
@@ -108,6 +108,7 @@ const Navbar = ({ user, onLogout }) => {
         </NavLink>
       ) : (
         <NavLink
+        onClick={() => setIsOpen(!isOpen)}
           to="/login"
           className={({ isActive }) =>
             `px-3 py-2 rounded-md text-sm font-medium ${
