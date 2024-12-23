@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.rbc-day-bg {
+    position: relative;
+  }
+  
+  .rbc-day-bg.has-event {
+    background-color: #E8F5E9; /* Highlight days with events */
+    color: transparent; /* Hide the day number */
+  }
+  
+  .rbc-day-bg.has-event:hover {
+    background-color: #C8E6C9; /* Slightly darker green on hover */
+  }
