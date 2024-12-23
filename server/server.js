@@ -10,6 +10,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const fs = require("fs");
+const cron = require("node-cron");
 
 
 
@@ -242,6 +243,19 @@ app.post("/verify-otp", async (req, res) => {
   } catch (err) {
     console.error("Error verifying OTP:", err);
     handleError(res, 500, "Error verifying OTP");
+  }
+});
+
+// Run every minute to delete expired unverified users
+cron.schedule("* * * * *", async () => {
+  const deleteQuery = "DELETE FROM users WHERE verified = 0 AND TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 5";
+  try {
+    const [result] = await pool.promise().query(deleteQuery);
+    if (result.affectedRows > 0) {
+      console.log(`Deleted ${result.affectedRows} unverified users.`);
+    }
+  } catch (err) {
+    console.error("Error deleting unverified users:", err);
   }
 });
 
