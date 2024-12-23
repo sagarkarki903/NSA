@@ -216,11 +216,19 @@ app.post("/verify-otp", async (req, res) => {
   }
 
   try {
-    // Check if the user exists and the OTP matches
-    const query = "SELECT * FROM users WHERE email = ? AND otp = ?";
-    const [results] = await pool.promise().query(query, [email, otp]);
+    // Check if the user exists
+    const checkUserQuery = "SELECT * FROM users WHERE email = ?";
+    const [userResults] = await pool.promise().query(checkUserQuery, [email]);
 
-    if (results.length === 0) {
+    if (userResults.length === 0) {
+      return res.status(404).json({ message: "Account no longer exists. OTP timed out." });
+    }
+
+    // Check if the OTP matches
+    const otpQuery = "SELECT * FROM users WHERE email = ? AND otp = ?";
+    const [otpResults] = await pool.promise().query(otpQuery, [email, otp]);
+
+    if (otpResults.length === 0) {
       return res.status(400).json({ message: "Invalid email or OTP." });
     }
 
@@ -234,6 +242,24 @@ app.post("/verify-otp", async (req, res) => {
     handleError(res, 500, "Error verifying OTP");
   }
 });
+
+// Delete expired unverified users after 3 minutes
+cron.schedule("* * * * *", async () => {
+  const deleteQuery = `
+    DELETE FROM users 
+    WHERE verified = 0 AND TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 1`;
+  try {
+    const [result] = await pool.promise().query(deleteQuery);
+    if (result.affectedRows > 0) {
+      console.log(`Deleted ${result.affectedRows} unverified users.`);
+    } else {
+      console.log("No unverified users to delete.");
+    }
+  } catch (err) {
+    console.error("Error deleting unverified users:", err);
+  }
+});
+
 
 // Fetch all users (accessible only to President)
 app.get("/userlist", authenticateToken, authorizeRole("President"), async (req, res) => {
