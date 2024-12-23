@@ -1,6 +1,8 @@
 {
-    "rewrites": [
-      { "source": "/api/(.*)", "destination": "https://nsa-events.onrender.com/$1" },
-      { "source": "/(.*)", "destination": "/" }
-    ]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
