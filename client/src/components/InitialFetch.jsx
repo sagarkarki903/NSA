@@ -51,6 +51,8 @@ const InitialFetch = () => {
 
   // Handle delete user
   const handleDelete = async (userId) => {
+    const confirmedUserDel = window.confirm(`Are you sure you want to delete "${user.username}"?`);
+    if(confirmedUserDel){
     try {
       const token = localStorage.getItem("token"); // Retrieve token
       await axios.delete(`https://nsa-events.onrender.com/users/${userId}`, {
@@ -63,6 +65,7 @@ const InitialFetch = () => {
       console.error("Error deleting user:", err);
       setError(err.response?.data?.message || "Error deleting user");
     }
+  }
   };
 
   // Start editing a user
