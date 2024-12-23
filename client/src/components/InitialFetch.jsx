@@ -210,15 +210,20 @@ const InitialFetch = () => {
                       Cancel
                     </button>
                   </div>
-                ) : (
+                ) :(
                   <div className="flex-1">
-                    <p className="text-lg font-semibold text-gray-800">
+                    <p
+                      className={`text-lg font-semibold ${
+                        !user.verified ? "text-red-500" : "text-gray-800"
+                      }`}
+                    >
                       {user.first_name} {user.last_name}
                     </p>
                     <p className="text-gray-500">Username: {user.username}</p>
                     <p className="text-gray-500">Email: {user.email}</p>
                     <p className="text-gray-500">Role: {user.role}</p>
                     <p className="text-gray-500">Classification: {user.classification}</p>
+                    <p className="text-gray-500">Verified: {user.verified ? "True" : "False"}</p>
                   </div>
                 )}
                 <div>
