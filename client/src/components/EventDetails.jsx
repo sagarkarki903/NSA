@@ -20,7 +20,7 @@ const EventDetails = () => {
 
   const fetchAPI = async () => {
     try {
-      const response = await axios.get(`http://https://nsa-events.onrender.com/${category_id}`);
+      const response = await axios.get(`https://nsa-events.onrender.com/${category_id}`);
       const event = response.data.find(
         (event) =>
           event.category_id === Number(category_id) && event.event_name === event_name
