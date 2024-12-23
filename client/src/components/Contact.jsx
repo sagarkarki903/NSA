@@ -2,8 +2,7 @@ import nsaLogo from "../assets/nsaLogo.png";
 import gmailLogo from "../assets/gmailLogo.png"
 import outlookLogo from "../assets/outlookLogo.png"
 import { useState } from "react";
-import axios from "axios";
-import Spline from '@splinetool/react-spline';
+
 
 
 
@@ -55,10 +54,6 @@ const Contact = () => {
           </div>
         </div>
       )}
-      {/* Spline Background */}
-
-      {/* <Spline scene="https://prod.spline.design/5fp0UhQvVutVLNBw/scene.splinecode" className="absolute inset-0 -z-10"/> */}
-       <div className='bg-[#D5D4E6] absolute w-36  h-10 bottom-5 right-4'>NSA@2025</div>
 
        <div className="flex justify-center z-999">
                 <img src={nsaLogo} alt="NSA Logo" className="w-36 h-36 rounded-full" />
