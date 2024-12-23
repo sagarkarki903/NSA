@@ -21,18 +21,21 @@ const Navbar = ({ user, onLogout }) => {
   const renderLeftLinks = () => (
     <>
       <NavLink
+        onClick={() => setIsOpen(!isOpen)}
         to="/"
         className={({ isActive }) =>
           `px-3 py-2 rounded-md text-sm font-medium ${
             isActive
               ? "bg-gray-700 text-white"
               : "text-gray-300 hover:bg-gray-700 hover:text-white"
+              
           }`
         }
       >
         Home
       </NavLink>
       <NavLink
+      onClick={() => setIsOpen(!isOpen)}
         to="/about"
         className={({ isActive }) =>
           `px-3 py-2 rounded-md text-sm font-medium ${
@@ -44,7 +47,9 @@ const Navbar = ({ user, onLogout }) => {
       >
         About Us
       </NavLink>
+
       <NavLink
+      onClick={() => setIsOpen(!isOpen)}
         to="/events"
         className={({ isActive }) =>
           `px-3 py-2 rounded-md text-sm font-medium ${
@@ -57,6 +62,7 @@ const Navbar = ({ user, onLogout }) => {
         Past Events
       </NavLink>
       <NavLink
+      onClick={() => setIsOpen(!isOpen)}
         to="/contact"
         className={({ isActive }) =>
           `px-3 py-2 rounded-md text-sm font-medium ${
@@ -70,6 +76,7 @@ const Navbar = ({ user, onLogout }) => {
       </NavLink>
       {user?.role === "President" && (
         <NavLink
+        onClick={() => setIsOpen(!isOpen)}
           to="/users"
           className={({ isActive }) =>
             `px-3 py-2 rounded-md text-sm font-medium ${
@@ -123,13 +130,13 @@ const Navbar = ({ user, onLogout }) => {
           {flashMessage}
         </div>
       )}
-      <nav style={{ backgroundColor: "#800000" }} className="text-white">
+      <nav style={{ backgroundColor: "#800000" }} className="text-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Left-aligned Links */}
             
             <div className="flex items-center space-x-4">
-            <NavLink to="/"><h1 className="text-xl font-bold cursor-pointer">ULM</h1></NavLink>  
+            <NavLink onClick={() => setIsOpen(!isOpen)} to="/"><h1 className="text-xl font-bold cursor-pointer">ULM</h1></NavLink>  
               <div className="hidden md:flex space-x-4">{renderLeftLinks()}</div>
             </div>
 
@@ -167,13 +174,21 @@ const Navbar = ({ user, onLogout }) => {
 
         {/* Dropdown Menu for Mobile */}
         {isOpen && (
-          <div className="md:hidden px-4 py-3 bg-gray-800 space-y-2">
-            <div>{renderLeftLinks()}</div>
-            <div className="border-t border-gray-600 mt-2 pt-2">
-              {renderRightLinks()}
-            </div>
-          </div>
-        )}
+  <div
+  className={`md:hidden bg-gray-800 text-white absolute top-16 left-0 w-full z-50 transform transition-transform ${
+    isOpen ? "translate-y-0" : "-translate-y-full"
+  }`}
+>
+
+    <div className="flex flex-col space-y-2 px-4 py-3 items-center">
+      {renderLeftLinks()}
+    </div>
+    <div className="border-t border-gray-600 mt-2 pt-2 px-24">
+      {renderRightLinks()}
+    </div>
+  </div>
+)}
+
       </nav>
     </>
   );

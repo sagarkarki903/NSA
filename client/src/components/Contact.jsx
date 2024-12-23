@@ -57,33 +57,39 @@ const Contact = () => {
       )}
       {/* Spline Background */}
 
-      <Spline scene="https://prod.spline.design/5fp0UhQvVutVLNBw/scene.splinecode" className="absolute inset-0 -z-10"/>
+      {/* <Spline scene="https://prod.spline.design/5fp0UhQvVutVLNBw/scene.splinecode" className="absolute inset-0 -z-10"/> */}
        <div className='bg-[#D5D4E6] absolute w-36  h-10 bottom-5 right-4'>NSA@2025</div>
 
        <div className="flex justify-center z-999">
                 <img src={nsaLogo} alt="NSA Logo" className="w-36 h-36 rounded-full" />
               </div>
-      <div className="flex item  justify-center px-80">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
-          <p className="text-gray-600 mb-8">
-            Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
-          </p>
-          <div className="space-y-6">
-            <div className="flex items-center gap-3 cursor-pointer"  onClick={handleContact}>
-              <MailIcon className="h-5 w-5 text-[#8B1818]"/>
-              <span>nsa@ulm.com</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <PhoneIcon className="h-5 w-5 text-[#8B1818]" />
-              <span>+1 (555) 000-0000</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <MapPinIcon className="h-5 w-5 text-[#8B1818]" />
-              <span>700 University Avenue, Monroe, LA 71209 </span>
-            </div>
+              <div className="flex flex-col items-center justify-center px-4 md:px-20 lg:px-80">
+      <div className="p-4 md:p-6 rounded-lg shadow-md bg-white w-full max-w-3xl">
+        <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-center">Contact Us</h1>
+        <p className="text-gray-600 mb-6 md:mb-8 text-center">
+          Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.
+        </p>
+
+        <div className="space-y-4 md:space-y-6">
+          <div 
+            className="flex items-center gap-3 cursor-pointer"  
+            onClick={handleContact}
+          >
+            <MailIcon className="h-5 w-5 text-[#8B1818]"/>
+            <span className="text-sm md:text-base">nsa@ulm.com</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <PhoneIcon className="h-5 w-5 text-[#8B1818]" />
+            <span className="text-sm md:text-base">+1 (555) 000-0000</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <MapPinIcon className="h-5 w-5 text-[#8B1818]" />
+            <span className="text-sm md:text-base">700 University Avenue, Monroe, LA 71209</span>
           </div>
         </div>
+      </div>
       
        
       </div>

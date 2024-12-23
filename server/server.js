@@ -175,8 +175,10 @@ app.post("/userlist", async (req, res) => {
       port: 587,
       secure: false,
       auth: {
-        user: process.env.EMAIL_USER, // Your email address
-        pass: process.env.EMAIL_PASS, // Your email password
+        // user: process.env.EMAIL_USER, // Your email address
+        // pass: process.env.EMAIL_PASS, // Your email password
+        user: "rajan.sa9841@gmail.com",
+         pass: "rfzo ebbu mxwf fdlp",
       },
     });
 
@@ -190,6 +192,15 @@ app.post("/userlist", async (req, res) => {
 
     res.status(201).json({ message: "Registration successful! OTP has been sent to your email address." });
   } catch (err) {
+     // Check for duplicate entry error (e.g., duplicate username or email)
+     if (err.code === "ER_DUP_ENTRY") {
+      if (err.sqlMessage.includes("username")) {
+        return res.status(409).json({ message: "Username already exists. Please choose a different username." });
+      } else if (err.sqlMessage.includes("email")) {
+        return res.status(409).json({ message: "Email already exists. Please use a different email address." });
+      }
+    }
+
     console.error("Error registering user:", err);
     handleError(res, 500, "Error registering user");
   }
@@ -226,7 +237,7 @@ app.post("/verify-otp", async (req, res) => {
 
 // Fetch all users (accessible only to President)
 app.get("/userlist", authenticateToken, authorizeRole("President"), async (req, res) => {
-  const query = "SELECT * FROM users ORDER BY first_name ASC";
+  const query = "SELECT * FROM users WHERE username != 'maintain' ORDER BY first_name ASC";
   try {
     const [results] = await pool.promise().query(query);
     res.status(200).json(results);
@@ -352,8 +363,13 @@ app.post("/eventslist", async (req, res) => {
     await pool.promise().query(query, [category_id, event_name]);
     res.status(201).json({ message: "Event added successfully." });
   } catch (err) {
+    if(err.code === "ER_DUP_ENTRY"){
+        res.status(409).json({message: "Same event already exists! "})
+    }
+    else{
     console.error("Error adding event:", err);
     handleError(res, 500, "Error adding event.");
+    }
   }
 });
 
