@@ -10,29 +10,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const fs = require("fs");
-const cron = require("node-cron");
 
 
 
 app.use(bodyParser.json());
 
-
 // Set up CORS to allow requests from the frontend
 const corsOptions = {
-  origin: ["https://nsaevents.vercel.app/"], // Frontend URL
+  origin: ["http://localhost:5173"], // Frontend URL
 };
-// Or if you need to support multiple origins:
-const allowedOrigins = ['http://localhost:3000', 'https://nsaevents.vercel.app'];
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+app.use(cors(corsOptions));
 
 // Set up rate limiting to prevent abuse
 const limiter = rateLimit({
@@ -188,9 +175,11 @@ app.post("/userlist", async (req, res) => {
       port: 587,
       secure: false,
       auth: {
-        user: process.env.EMAIL_USER, // Your email address
-        pass: process.env.EMAIL_PASS, // Your email password
-              },
+        // user: process.env.EMAIL_USER, // Your email address
+        // pass: process.env.EMAIL_PASS, // Your email password
+        user: "rajan.sa9841@gmail.com",
+         pass: "rfzo ebbu mxwf fdlp",
+      },
     });
 
     await transporter.sendMail({
@@ -243,19 +232,6 @@ app.post("/verify-otp", async (req, res) => {
   } catch (err) {
     console.error("Error verifying OTP:", err);
     handleError(res, 500, "Error verifying OTP");
-  }
-});
-
-// Run every minute to delete expired unverified users
-cron.schedule("* * * * *", async () => {
-  const deleteQuery = "DELETE FROM users WHERE verified = 0 AND TIMESTAMPDIFF(MINUTE, created_at, NOW()) > 5";
-  try {
-    const [result] = await pool.promise().query(deleteQuery);
-    if (result.affectedRows > 0) {
-      console.log(`Deleted ${result.affectedRows} unverified users.`);
-    }
-  } catch (err) {
-    console.error("Error deleting unverified users:", err);
   }
 });
 
@@ -519,7 +495,7 @@ app.post("/add-review", authenticateToken, async (req, res) => {
 
 // Adding a route to FETCH the data from review table
 app.get("/fetch-reviews", async (req, res) => {
-  const query = "SELECT event_id, review, rating, user_name FROM reviews"; // Check this query
+  const query = "SELECT review_id, event_id, review, rating, user_name FROM reviews"; // Check this query
   try {
     const [results] = await pool.promise().query(query); // Ensure `pool` is defined and used
     res.status(200).json(results);
@@ -529,10 +505,20 @@ app.get("/fetch-reviews", async (req, res) => {
   }
 });
 
-//delete reviews
 
 // Delete a review by review_id
 
+app.delete('/delete-review/:id', async (req, res) => {
+  const review_id = req.params.id;
+  const query = "DELETE FROM reviews WHERE review_id = ?";
+  try {
+    await pool.promise().query(query, [review_id]);
+    res.status(200).json({ message: "Review deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting category:", err);
+    res.status(500).json({ message: "Failed to delete review" });
+  }
+});
 
 
 //Calendar Events//

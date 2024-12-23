@@ -122,8 +122,8 @@ const EventDetails = () => {
       user_name : `${user?.first_name || ""} ${user?.last_name || ""}`.trim()
     };
 
-    // Optimistic update
-    setFetchedReview((prev) => [...prev, reviewData]);
+    // // Optimistic update
+    // setFetchedReview((prev) => [...prev, reviewData]);
 
     await axios.post("https://nsa-events.onrender.com/add-review", reviewData, {
       headers: { Authorization: `Bearer ${token}` },
@@ -133,6 +133,7 @@ const EventDetails = () => {
     setShowForm(false);
     setReview("");
     setRatingStar(null);
+    DisplayReviews();
   } catch (error) {
     console.error("Error adding review:", error);
 
@@ -149,17 +150,20 @@ const EventDetails = () => {
   const DisplayReviews = async ()=> {
         try {
           const response = await axios.get('https://nsa-events.onrender.com/fetch-reviews');
-          setFetchedReview(response.data); // Store fetched data in state
+          setFetchedReview(response.data.filter((review) => review.event_id === eventDetails.event_id)); // Store fetched data in state
         } catch (error) {
           console.error('Error fetching data:', error);
         }
         
       };
 
-    useEffect(() => {
-        DisplayReviews();
-      }, []);
-
+  
+      useEffect(() => {
+        if (eventDetails.event_id) {
+          DisplayReviews();
+        }
+      }, [eventDetails.event_id]);
+      
     
       const filteredReviews = fetchedReview.filter(
         (review) =>
@@ -169,10 +173,21 @@ const EventDetails = () => {
       );
 
 
-const handleDeleteReview = async () => {
-
-};
-
+      const handleDeleteReview = async (review_id) => {
+        if (window.confirm("Are you sure you want to delete this review?")) {
+          try {
+            await axios.delete(`https://nsa-events.onrender.com/delete-review/${review_id}`);
+            alert("Review deleted successfully");
+             DisplayReviews();
+         
+            
+          } catch (error) {
+            console.error("Error deleting review:", error);
+            alert("Failed to delete review");
+          }
+        }
+      };
+      
 
   return (
     <div className="bg-gray-100 p-6 min-h-screen">
