@@ -19,6 +19,18 @@ app.use(bodyParser.json());
 const corsOptions = {
   origin: ["https://nsaevents.vercel.app/"], // Frontend URL
 };
+// Or if you need to support multiple origins:
+const allowedOrigins = ['http://localhost:3000', 'https://nsaevents.vercel.app'];
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(cors(corsOptions));
 
 // Set up rate limiting to prevent abuse
