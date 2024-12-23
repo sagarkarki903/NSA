@@ -510,15 +510,20 @@ app.get("/fetch-reviews", async (req, res) => {
 
 app.delete('/delete-review/:id', async (req, res) => {
   const review_id = req.params.id;
+  console.log("Deleting review with ID:", review_id); // Debugging
   const query = "DELETE FROM reviews WHERE review_id = ?";
   try {
-    await pool.promise().query(query, [review_id]);
+    const [result] = await pool.promise().query(query, [review_id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Review not found." });
+    }
     res.status(200).json({ message: "Review deleted successfully" });
   } catch (err) {
-    console.error("Error deleting category:", err);
+    console.error("Error deleting review:", err);
     res.status(500).json({ message: "Failed to delete review" });
   }
 });
+
 
 
 //Calendar Events//

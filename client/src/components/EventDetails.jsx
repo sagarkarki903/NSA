@@ -157,13 +157,13 @@ const EventDetails = () => {
         
       };
 
-  
       useEffect(() => {
         if (eventDetails.event_id) {
           DisplayReviews();
         }
       }, [eventDetails.event_id]);
       
+
     
       const filteredReviews = fetchedReview.filter(
         (review) =>
@@ -173,21 +173,21 @@ const EventDetails = () => {
       );
 
 
-      const handleDeleteReview = async (review_id) => {
-        if (window.confirm("Are you sure you want to delete this review?")) {
-          try {
-            await axios.delete(`https://nsa-events.onrender.com/delete-review/${review_id}`);
-            alert("Review deleted successfully");
-             DisplayReviews();
-         
-            
-          } catch (error) {
-            console.error("Error deleting review:", error);
-            alert("Failed to delete review");
-          }
-        }
-      };
+
+const handleDeleteReview = async (review_id) => {
+  if (window.confirm("Are you sure you want to delete this review?")) {
+    try {
+      await axios.delete(`https://nsa-events.onrender.com/delete-review/${review_id}`);
+      alert("Review deleted successfully");
+       DisplayReviews();
+   
       
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      alert("Failed to delete review");
+    }
+  }
+};
 
   return (
     <div className="bg-gray-100 p-6 min-h-screen">
@@ -387,6 +387,7 @@ const EventDetails = () => {
         </p>
       <Rating value={review.rating} readOnly style={{ maxWidth: 100 }} />
       <p className="text-gray-600 mt-2">{review.review}</p>
+      {/* <p>{review.review_id}</p> */}
 
                   <button
                     onClick={() => handleDeleteReview(review.review_id)}
