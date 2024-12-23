@@ -387,14 +387,16 @@ const handleDeleteReview = async (review_id) => {
         </p>
       <Rating value={review.rating} readOnly style={{ maxWidth: 100 }} />
       <p className="text-gray-600 mt-2">{review.review}</p>
-      {/* <p>{review.review_id}</p> */}
-
-                  <button
-                    onClick={() => handleDeleteReview(review.review_id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded-md mt-2 hover:bg-red-600"
-                  >
-                    Delete
-                  </button>
+      
+     {/* Only show the Delete button if the user is the President */}
+     {user?.role === 'President' && (
+              <button
+              onClick={() => handleDeleteReview(review.review_id)}
+              className="bg-red-500 text-white px-2 py-1 rounded-md mt-2 hover:bg-red-600"
+            >
+              Delete
+            </button>
+            )}        
                
     </div>
       ))
