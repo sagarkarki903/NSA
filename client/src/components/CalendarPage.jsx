@@ -170,10 +170,11 @@ const upcomingEvents = events.filter(event => new Date(event.start) > new Date()
   </div>
       <div className="flex flex-col md:flex-row h-screen">
         {/* Calendar Section */}
-        <div className="w-full md:w-2/3  h-[75vh] p-4 pb-16 overflow-hidden" >
+        <div className="w-full md:w-2/3 h-[60vh] md:h-[75vh] p-4 pb-16 overflow-x-auto" >
           <h1 className="text-2xl font-bold mb-4 text-center text-gray-700 mt-6">
             Calendar
           </h1>
+          <div className="w-full h-[75vh] md:h-[85vh] p-4 pb-16 overflow-hidden">
           <Calendar
   localizer={localizer}
   events={events}
@@ -208,6 +209,7 @@ const upcomingEvents = events.filter(event => new Date(event.start) > new Date()
     };
   }}
 />
+</div>
 {/* Delete Mode Buttons */}
 
         </div>

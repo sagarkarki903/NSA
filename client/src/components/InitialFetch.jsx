@@ -132,7 +132,7 @@ const InitialFetch = () => {
             {users.map((user) => (
               <li
                 key={user.id}
-                className="py-4 flex justify-between items-center"
+                className="py-4 flex flex-col sm:flex-row sm:justify-between items-center"
               >
                 {editingUser === user.id ? (
                   <div className="flex-1">
@@ -211,7 +211,7 @@ const InitialFetch = () => {
                     </button>
                   </div>
                 ) :(
-                  <div className="flex-1">
+                  <div className="flex-1 mb-4 sm:mb-0">
                     <p
                       className={`text-lg font-semibold ${
                         !user.verified ? "text-red-500" : "text-gray-800"
@@ -226,7 +226,7 @@ const InitialFetch = () => {
                     <p className="text-gray-500">Verified: {user.verified ? "True" : "False"}</p>
                   </div>
                 )}
-                <div>
+                <div className="flex flex-wrap gap-2">
                   {editingUser !== user.id && (
                     <button
                       onClick={() => handleEditClick(user)}

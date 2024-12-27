@@ -10,16 +10,21 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const rateLimit = require("express-rate-limit");
 const fs = require("fs");
-
+const cron = require("node-cron");
 
 
 app.use(bodyParser.json());
 
+
 // Set up CORS to allow requests from the frontend
 const corsOptions = {
-  origin: ["http://localhost:5173"], // Frontend URL
+  origin: ["https://nsaevents.vercel.app"], // Add your frontend URL
+  methods: ["GET", "POST", "PUT", "DELETE"], // Specify allowed methods
+  credentials: true, // If cookies are being used
 };
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // Preflight requests
+
 
 // Set up rate limiting to prevent abuse
 const limiter = rateLimit({
