@@ -13,6 +13,7 @@ import EventDetails from './components/EventDetails';
 import Rough from './components/Rough';
 import InitialFetch from './components/InitialFetch';
 import CalendarPage from './components/CalendarPage';
+import NotFound from './components/NotFound';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -63,6 +64,7 @@ const App = () => {
             <Route path="/rough" element={<Rough />} />
             <Route path="/users" element={<InitialFetch />} />
             <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/*" element ={<NotFound/>}/>
           </Routes>
         </main>
         <Footer />
