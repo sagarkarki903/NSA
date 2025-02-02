@@ -19,13 +19,13 @@ const Contact = () => {
 
 
    const handleOutlookClick = () => {
-    const recipient = "karkisa@warhawks.ulm.edu";
+    const recipient = "nsaulm2k16@gmail.com";
     window.open(
       `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(recipient)}`
     );
   };
   const handleGmailClick = () => {
-    const recipient = "sagarkarki903@gmail.com";
+    const recipient = "nsaulm2k16@gmail.com";
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}`;
     
     // Open Gmail compose in a new tab
